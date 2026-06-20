@@ -32,4 +32,6 @@ int main(int argc, char** argv) {
   top->accept(codegen);
   codegen.finalise();
   codegen.llvm_module->print(llvm::errs(), nullptr);
+
+  codegen.compile();
 }
