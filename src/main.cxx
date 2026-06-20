@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "code_generation_visitor.h"
 #include "file_io.h"
 #include "lexer.h"
 #include "parser.h"
@@ -26,4 +27,9 @@ int main(int argc, char** argv) {
   auto top = parser.parse_top_level();
   PrintVisitor v;
   top->accept(v);
+
+  CodegenVisitor codegen;
+  top->accept(codegen);
+  codegen.finalise();
+  codegen.llvm_module->print(llvm::errs(), nullptr);
 }
