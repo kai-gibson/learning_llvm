@@ -62,6 +62,20 @@ void CodegenVisitor::visit(VariableDeclarationStatement& stmt) {
   return;
 }
 
+void CodegenVisitor::visit(VariableAssignmentStatement& stmt) {
+  auto* variable = named_values[stmt.name];
+  if (!variable) {
+    throw std::runtime_error(
+        std::format("Cannot assign to non-existent variable: {}", stmt.name));
+  }
+
+  auto r = emit(*stmt.value);
+
+  llvm_builder->CreateStore(r, variable);
+  result = r;
+  return;
+}
+
 void CodegenVisitor::visit(BinaryExpression& expr) {
   auto l = emit(*expr.lhs);
   auto r = emit(*expr.rhs);

@@ -23,18 +23,27 @@ struct PrintVisitor : public Visitor {
   }
 
   void visit(VariableDeclarationStatement& stmt) override {
-    std::cout << "VariableDeclarationStatement(Name(\"" << stmt.name
-              << "\"), Value(";
+    std::cout << "VariableDeclarationStatement(\n\t\tName(\"" << stmt.name
+              << "\"),\n\t\tValue(";
+    stmt.value->accept(*this);
+
+    std::cout << ")";
+  }
+
+  void visit(VariableAssignmentStatement& stmt) override {
+    std::cout << "VariableAssignmentStatement(\n\t\tName(\"" << stmt.name
+              << "\"),\n\t\tValue(";
     stmt.value->accept(*this);
 
     std::cout << ")";
   }
 
   void visit(Program& program) override {
-    std::cout << "Program(";
+    std::cout << "Program(\n";
     for (const auto& statement : program.statements) {
+      std::cout << "\t";
       statement->accept(*this);
-      std::cout << ",";
+      std::cout << ",\n";
     }
 
     std::cout << ")";

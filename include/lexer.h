@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 enum class TokenType : int8_t {
@@ -19,12 +20,18 @@ enum class TokenType : int8_t {
   LParen,
   RParen,
   Assignment,
+  Set,
   EndOfFile,
 };
 
-constexpr std::array<const char*, 10> TOKEN_TYPE_STR = {
-    "Plus",       "Minus",  "Asterisk", "ForwardSlash", "FloatLiteral",
-    "Identifier", "LParen", "RParen",   "Assignment",   "EndOfFile",
+const std::unordered_map<std::string, TokenType> keywords = {
+    {"set", TokenType::Set},
+};
+
+constexpr std::array<const char*, 11> TOKEN_TYPE_STR = {
+    "Plus",         "Minus",      "Asterisk",  "ForwardSlash",
+    "FloatLiteral", "Identifier", "LParen",    "RParen",
+    "Assignment",   "Set",        "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {

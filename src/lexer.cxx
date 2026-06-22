@@ -27,6 +27,9 @@ Token Lexer::parse_identifier() {
   while (is_identifier_char(current())) advance();
   auto word = data.substr(start, index - start);
 
+  auto it = keywords.find(word);
+  if (it != keywords.end()) return {it->second, word};
+
   return {TokenType::Identifier, word};
 }
 

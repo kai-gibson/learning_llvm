@@ -23,6 +23,7 @@ class Parser {
   std::unique_ptr<ASTNode> parse_expression(int32_t min_precedence);
   std::unique_ptr<ASTNode> parse_statement();
   std::unique_ptr<ASTNode> parse_variable_declaration();
+  std::unique_ptr<ASTNode> parse_variable_assignment();
 
   // vars
   const Tokens& tokens;
