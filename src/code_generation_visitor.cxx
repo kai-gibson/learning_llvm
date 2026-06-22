@@ -48,6 +48,14 @@ void CodegenVisitor::visit(BinaryExpression& expr) {
   if (expr.op == TokenType::Assignment) {
     auto* var = dynamic_cast<VariableExpression*>(expr.lhs.get());
     if (!var) throw std::runtime_error("LHS of Assignment must be variable");
+
+    auto* exists = named_values[var->name];
+    if (exists) {
+      throw std::runtime_error(
+          "Cannot allocate same variable twice; use `set x = 1` to modify "
+          "value");
+    }
+
     auto r = emit(*expr.rhs);
 
     auto* alloca = llvm_builder->CreateAlloca(
