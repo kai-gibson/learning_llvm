@@ -2,6 +2,19 @@
 
 #include <iostream>
 
+int32_t precedence(TokenType t) {
+  switch (t) {
+    case TokenType::Plus:
+    case TokenType::Minus:
+      return 1;
+    case TokenType::Asterisk:
+    case TokenType::ForwardSlash:
+      return 2;
+    default:
+      return 0;
+  }
+}
+
 const Token& Parser::consume(TokenType expected) {
   if (peek().type != expected) {
     throw std::runtime_error(std::format("Expected: {}, got: {}",
@@ -31,24 +44,21 @@ std::unique_ptr<ExpressionNode> Parser::parse_float_expression() {
   return std::move(result);
 }
 
-std::unique_ptr<ExpressionNode> Parser::parse_binary_expression(
-    std::unique_ptr<ExpressionNode> lhs) {
-  auto op = peek().type;
-  advance();
-  auto rhs = parse_float_expression();
+std::unique_ptr<ExpressionNode> Parser::parse_expression(
+    int32_t min_precedence) {
+  auto lhs = parse_float_expression();
 
-  return std::make_unique<BinaryExpression>(op, std::move(lhs), std::move(rhs));
+  while (precedence(peek().type) > min_precedence) {
+    auto op = peek().type;
+    advance();
+    auto rhs = parse_expression(precedence(op));
+    lhs =
+        std::make_unique<BinaryExpression>(op, std::move(lhs), std::move(rhs));
+  }
+
+  return lhs;
 }
 
 std::unique_ptr<ExpressionNode> Parser::parse_top_level() {
-  auto lhs = parse_float_expression();
-  switch (peek().type) {
-    case TokenType::Asterisk:
-    case TokenType::Minus:
-    case TokenType::Plus:
-    case TokenType::ForwardSlash:
-      return parse_binary_expression(std::move(lhs));
-    default:
-      throw std::runtime_error("Expected binary expression");
-  }
+  return parse_expression(0);
 }

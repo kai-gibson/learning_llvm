@@ -16,7 +16,8 @@ class Parser {
 
   std::unique_ptr<ExpressionNode> parse_float_expression();
   std::unique_ptr<ExpressionNode> parse_binary_expression(
-      std::unique_ptr<ExpressionNode> lhs);
+      std::unique_ptr<ExpressionNode> lhs, int32_t min_precedence);
+  std::unique_ptr<ExpressionNode> parse_expression(int32_t min_precedence);
 
   // vars
   const Tokens& tokens;
