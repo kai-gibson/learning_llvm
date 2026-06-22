@@ -61,8 +61,16 @@ struct ShowStatement : public ASTNode {
   void accept(Visitor& v) override;
 };
 
-struct Program : public ASTNode {
+struct FunctionDeclaration : public ASTNode {
+  FunctionDeclaration(std::string name) : name(std::move(name)) {}
+
+  std::string name;
   std::vector<std::unique_ptr<ASTNode>> statements;
+
+  void accept(Visitor& v) override;
+};
+struct Program : public ASTNode {
+  std::vector<std::unique_ptr<ASTNode>> functions;
 
   void accept(Visitor& v) override;
 };

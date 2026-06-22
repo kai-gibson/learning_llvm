@@ -22,18 +22,22 @@ enum class TokenType : int8_t {
   Assignment,
   Set,
   Show,
+  Function,
+  End,
   EndOfFile,
 };
 
 const std::unordered_map<std::string, TokenType> keywords = {
     {"set", TokenType::Set},
     {"show", TokenType::Show},
+    {"func", TokenType::Function},
+    {"end", TokenType::End},
 };
 
-constexpr std::array<const char*, 12> TOKEN_TYPE_STR = {
-    "Plus",         "Minus",      "Asterisk", "ForwardSlash",
-    "FloatLiteral", "Identifier", "LParen",   "RParen",
-    "Assignment",   "Set",        "Show",     "EndOfFile",
+constexpr std::array<const char*, 14> TOKEN_TYPE_STR = {
+    "Plus",       "Minus",    "Asterisk", "ForwardSlash", "FloatLiteral",
+    "Identifier", "LParen",   "RParen",   "Assignment",   "Set",
+    "Show",       "Function", "End",      "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {

@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
   std::ofstream ofs(outfile);
 
   codegen.llvm_module->print(llvm::errs(), nullptr);
+
   std::error_code EC;
   llvm::raw_fd_ostream file(outfile, EC, llvm::sys::fs::OF_None);
 

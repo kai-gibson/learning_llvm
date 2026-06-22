@@ -13,16 +13,6 @@ CodegenVisitor::CodegenVisitor() {
 
   llvm::Function::Create(printf_type, llvm::Function::ExternalLinkage, "printf",
                          *llvm_module);
-
-  auto* main_type =
-      llvm::FunctionType::get(llvm::Type::getInt32Ty(*llvm_context), false);
-  auto* main_fn = llvm::Function::Create(
-      main_type, llvm::Function::ExternalLinkage, "main", *llvm_module);
-
-  current_function = main_fn;
-
-  auto* entry = llvm::BasicBlock::Create(*llvm_context, "entry", main_fn);
-  llvm_builder->SetInsertPoint(entry);
 }
 
 llvm::Value* CodegenVisitor::emit(ASTNode& expr) {
@@ -30,14 +20,7 @@ llvm::Value* CodegenVisitor::emit(ASTNode& expr) {
   return result;
 }
 
-void CodegenVisitor::finalise() {
-  auto* fmt = llvm_builder->CreateGlobalStringPtr("%.2f\n", "fmt");
-  auto* printf_fn = llvm_module->getFunction("printf");
-  llvm_builder->CreateCall(printf_fn->getFunctionType(), printf_fn,
-                           {fmt, result});
-  llvm_builder->CreateRet(
-      llvm::ConstantInt::get(llvm::Type::getInt32Ty(*llvm_context), 0));
-}
+void CodegenVisitor::finalise() {}
 
 void CodegenVisitor::compile() {
   emit_object_file(*llvm_module, "output.o");
@@ -112,8 +95,8 @@ void CodegenVisitor::visit(VariableExpression& expr) {
 }
 
 void CodegenVisitor::visit(Program& expr) {
-  for (auto& statement : expr.statements) {
-    result = emit(*statement);
+  for (auto& func : expr.functions) {
+    result = emit(*func);
   }
 }
 
@@ -125,4 +108,21 @@ void CodegenVisitor::visit(ShowStatement& stmt) {
   result = emit(*stmt.expr);
   llvm_builder->CreateCall(printf_fn->getFunctionType(), printf_fn,
                            {fmt, result});
+}
+
+void CodegenVisitor::visit(FunctionDeclaration& func_declaration) {
+  named_values.clear();
+
+  auto* func_type =
+      llvm::FunctionType::get(llvm::Type::getInt32Ty(*llvm_context), false);
+  auto* func =
+      llvm::Function::Create(func_type, llvm::Function::ExternalLinkage,
+                             func_declaration.name, *llvm_module);
+  auto* entry = llvm::BasicBlock::Create(*llvm_context, "entry", func);
+  llvm_builder->SetInsertPoint(entry);
+
+  for (auto& statement : func_declaration.statements) result = emit(*statement);
+
+  llvm_builder->CreateRet(
+      llvm::ConstantInt::get(llvm::Type::getInt32Ty(*llvm_context), 0));
 }

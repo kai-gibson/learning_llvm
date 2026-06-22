@@ -25,6 +25,7 @@ class Parser {
   std::unique_ptr<ASTNode> parse_variable_declaration();
   std::unique_ptr<ASTNode> parse_variable_assignment();
   std::unique_ptr<ASTNode> parse_show_statement();
+  std::unique_ptr<ASTNode> parse_function_declaration();
 
   // vars
   const Tokens& tokens;

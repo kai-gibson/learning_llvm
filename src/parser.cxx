@@ -127,11 +127,29 @@ std::unique_ptr<ASTNode> Parser::parse_statement() {
   }
 };
 
+std::unique_ptr<ASTNode> Parser::parse_function_declaration() {
+  consume(TokenType::Function);
+  auto [_, name] = consume(TokenType::Identifier);
+
+  auto func = std::make_unique<FunctionDeclaration>(name);
+
+  consume(TokenType::LParen);
+  consume(TokenType::RParen);
+
+  while (peek().type != TokenType::End) {
+    func->statements.push_back(parse_statement());
+  }
+
+  consume(TokenType::End);
+
+  return std::move(func);
+}
+
 std::unique_ptr<ASTNode> Parser::parse_top_level() {
   auto program = std::make_unique<Program>();
 
   while (peek().type != TokenType::EndOfFile) {
-    program->statements.push_back(parse_statement());
+    program->functions.push_back(parse_function_declaration());
   }
 
   return std::move(program);

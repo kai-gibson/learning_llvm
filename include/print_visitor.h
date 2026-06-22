@@ -40,9 +40,9 @@ struct PrintVisitor : public Visitor {
 
   void visit(Program& program) override {
     std::cout << "Program(\n";
-    for (const auto& statement : program.statements) {
+    for (const auto& func : program.functions) {
       std::cout << "\t";
-      statement->accept(*this);
+      func->accept(*this);
       std::cout << ",\n";
     }
 
@@ -52,6 +52,17 @@ struct PrintVisitor : public Visitor {
   void visit(ShowStatement& stmt) override {
     std::cout << "Show(\n";
     stmt.expr->accept(*this);
+    std::cout << ")";
+  }
+
+  void visit(FunctionDeclaration& func) override {
+    std::cout << "FunctionDeclaration(\n\tName(\"" << func.name << "\"\n";
+
+    for (const auto& statement : func.statements) {
+      std::cout << "\t";
+      statement->accept(*this);
+      std::cout << ",\n";
+    }
     std::cout << ")";
   }
 };

@@ -27,6 +27,7 @@ class CodegenVisitor : public Visitor {
   void visit(VariableDeclarationStatement& stmt) override;
   void visit(VariableAssignmentStatement& stmt) override;
   void visit(ShowStatement& stmt) override;
+  void visit(FunctionDeclaration& stmt) override;
 
   llvm::Value* emit(ASTNode& expr);
   void compile();
@@ -39,7 +40,6 @@ class CodegenVisitor : public Visitor {
 
  private:
   llvm::Value* result;
-  llvm::Function* current_function;
 };
 
 #endif  // CODE_GENERATION_VISITOR_H
