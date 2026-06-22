@@ -89,7 +89,9 @@ void CodegenVisitor::visit(FloatLiteralExpression& expr) {
 
 void CodegenVisitor::visit(VariableExpression& expr) {
   auto* alloca = named_values[expr.name];
-  if (!alloca) throw std::runtime_error("Unknown variable name");
+  if (!alloca)
+    throw std::runtime_error(
+        std::format("Unknown variable name: {}", expr.name));
   result = llvm_builder->CreateLoad(llvm::Type::getDoubleTy(*llvm_context),
                                     alloca, expr.name);
 }
@@ -125,4 +127,13 @@ void CodegenVisitor::visit(FunctionDeclaration& func_declaration) {
 
   llvm_builder->CreateRet(
       llvm::ConstantInt::get(llvm::Type::getInt32Ty(*llvm_context), 0));
+}
+
+void CodegenVisitor::visit(FunctionCallExpression& funccall) {
+  auto* fn = llvm_module->getFunction(funccall.name);
+  if (!fn)
+    throw std::runtime_error(
+        std::format("Function {} does not exist", funccall.name));
+
+  llvm_builder->CreateCall(fn->getFunctionType(), fn, {});
 }

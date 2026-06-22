@@ -28,6 +28,7 @@ class CodegenVisitor : public Visitor {
   void visit(VariableAssignmentStatement& stmt) override;
   void visit(ShowStatement& stmt) override;
   void visit(FunctionDeclaration& stmt) override;
+  void visit(FunctionCallExpression& stmt) override;
 
   llvm::Value* emit(ASTNode& expr);
   void compile();

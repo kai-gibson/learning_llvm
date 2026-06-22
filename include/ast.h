@@ -69,6 +69,15 @@ struct FunctionDeclaration : public ASTNode {
 
   void accept(Visitor& v) override;
 };
+
+struct FunctionCallExpression : public ASTNode {
+  FunctionCallExpression(std::string name) : name(std::move(name)) {}
+
+  std::string name;
+
+  void accept(Visitor& v) override;
+};
+
 struct Program : public ASTNode {
   std::vector<std::unique_ptr<ASTNode>> functions;
 

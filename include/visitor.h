@@ -12,6 +12,7 @@ struct Visitor {
   virtual void visit(VariableAssignmentStatement& expr) = 0;
   virtual void visit(ShowStatement& expr) = 0;
   virtual void visit(FunctionDeclaration& expr) = 0;
+  virtual void visit(FunctionCallExpression& expr) = 0;
 };
 
 #endif  // VISITOR_H

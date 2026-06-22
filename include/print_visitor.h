@@ -65,6 +65,11 @@ struct PrintVisitor : public Visitor {
     }
     std::cout << ")";
   }
+
+  void visit(FunctionCallExpression& funccall) override {
+    std::cout << "FunctionCallExpression(\n\tName(\"" << funccall.name
+              << "\"\n";
+  }
 };
 
 #endif  // PRINT_VISITOR_H

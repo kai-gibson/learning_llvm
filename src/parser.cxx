@@ -59,6 +59,14 @@ std::unique_ptr<ASTNode> Parser::parse_identifier_expression() {
   std::string name = peek().value;
   advance();
 
+  // Function call expression
+  if (peek().type == TokenType::LParen) {
+    // No args implemented yet
+    advance();
+    consume(TokenType::RParen);
+    return std::make_unique<FunctionCallExpression>(name);
+  }
+
   return std::make_unique<VariableExpression>(name);
 }
 
