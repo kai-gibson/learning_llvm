@@ -48,6 +48,12 @@ struct PrintVisitor : public Visitor {
 
     std::cout << ")";
   }
+
+  void visit(ShowStatement& stmt) override {
+    std::cout << "Show(\n";
+    stmt.expr->accept(*this);
+    std::cout << ")";
+  }
 };
 
 #endif  // PRINT_VISITOR_H

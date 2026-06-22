@@ -54,6 +54,13 @@ struct VariableDeclarationStatement : public ASTNode {
   void accept(Visitor& v) override;
 };
 
+struct ShowStatement : public ASTNode {
+  ShowStatement(std::unique_ptr<ASTNode> expr) : expr(std::move(expr)) {}
+
+  std::unique_ptr<ASTNode> expr;
+  void accept(Visitor& v) override;
+};
+
 struct Program : public ASTNode {
   std::vector<std::unique_ptr<ASTNode>> statements;
 

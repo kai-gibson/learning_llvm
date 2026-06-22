@@ -116,3 +116,13 @@ void CodegenVisitor::visit(Program& expr) {
     result = emit(*statement);
   }
 }
+
+void CodegenVisitor::visit(ShowStatement& stmt) {
+  auto* fmt = llvm_builder->CreateGlobalStringPtr("%.2f\n", "fmt");
+
+  auto* printf_fn = llvm_module->getFunction("printf");
+
+  result = emit(*stmt.expr);
+  llvm_builder->CreateCall(printf_fn->getFunctionType(), printf_fn,
+                           {fmt, result});
+}

@@ -108,12 +108,20 @@ std::unique_ptr<ASTNode> Parser::parse_variable_assignment() {
                                                        parse_expression(0));
 }
 
+std::unique_ptr<ASTNode> Parser::parse_show_statement() {
+  consume(TokenType::Show);
+
+  return std::make_unique<ShowStatement>(parse_expression(0));
+}
+
 std::unique_ptr<ASTNode> Parser::parse_statement() {
   switch (peek().type) {
     case TokenType::Identifier:
       return parse_variable_declaration();
     case TokenType::Set:
       return parse_variable_assignment();
+    case TokenType::Show:
+      return parse_show_statement();
     default:
       throw std::runtime_error("Unexpected statement");
   }
