@@ -25,7 +25,7 @@ class CodegenVisitor : public Visitor {
   void visit(VariableExpression& expr) override;
   void visit(Program& expr) override;
 
-  llvm::Value* emit(ExpressionNode& expr);
+  llvm::Value* emit(ASTNode& expr);
   void compile();
 
   std::unique_ptr<llvm::LLVMContext> llvm_context;

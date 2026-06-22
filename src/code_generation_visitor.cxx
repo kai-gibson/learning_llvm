@@ -25,7 +25,7 @@ CodegenVisitor::CodegenVisitor() {
   llvm_builder->SetInsertPoint(entry);
 }
 
-llvm::Value* CodegenVisitor::emit(ExpressionNode& expr) {
+llvm::Value* CodegenVisitor::emit(ASTNode& expr) {
   expr.accept(*this);
   return result;
 }

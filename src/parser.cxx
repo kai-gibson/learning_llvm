@@ -36,7 +36,7 @@ const Token& Parser::peek() {
 
 void Parser::advance() { index += 1; }
 
-std::unique_ptr<ExpressionNode> Parser::parse_float_expression() {
+std::unique_ptr<ASTNode> Parser::parse_float_expression() {
   auto token = peek();
   std::clog << "converting: " << token.value << " to double...\n";
   auto value = std::stod(token.value);
@@ -46,7 +46,7 @@ std::unique_ptr<ExpressionNode> Parser::parse_float_expression() {
   return std::move(result);
 }
 
-std::unique_ptr<ExpressionNode> Parser::parse_paren_expression() {
+std::unique_ptr<ASTNode> Parser::parse_paren_expression() {
   advance();
   auto expr = parse_expression(0);
   if (peek().type != TokenType::RParen) {
@@ -57,14 +57,14 @@ std::unique_ptr<ExpressionNode> Parser::parse_paren_expression() {
   return expr;
 }
 
-std::unique_ptr<ExpressionNode> Parser::parse_identifier_expression() {
+std::unique_ptr<ASTNode> Parser::parse_identifier_expression() {
   std::string name = peek().value;
   advance();
 
   return std::make_unique<VariableExpression>(name);
 }
 
-std::unique_ptr<ExpressionNode> Parser::parse_primary_expression() {
+std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
   switch (peek().type) {
     case TokenType::FloatLiteral:
       return parse_float_expression();
@@ -77,8 +77,7 @@ std::unique_ptr<ExpressionNode> Parser::parse_primary_expression() {
   }
 }
 
-std::unique_ptr<ExpressionNode> Parser::parse_expression(
-    int32_t min_precedence) {
+std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {
   auto lhs = parse_primary_expression();
 
   while (precedence(peek().type) > min_precedence) {
@@ -92,7 +91,7 @@ std::unique_ptr<ExpressionNode> Parser::parse_expression(
   return lhs;
 }
 
-std::unique_ptr<ExpressionNode> Parser::parse_top_level() {
+std::unique_ptr<ASTNode> Parser::parse_top_level() {
   auto program = std::make_unique<Program>();
 
   while (peek().type != TokenType::EndOfFile) {

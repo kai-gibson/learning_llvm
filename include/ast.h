@@ -6,38 +6,38 @@
 // forward declaration
 struct Visitor;
 
-class ExpressionNode {
+class ASTNode {
  public:
-  virtual ~ExpressionNode() = default;
+  virtual ~ASTNode() = default;
   virtual void accept(Visitor& v) = 0;
 };
 
-struct FloatLiteralExpression : public ExpressionNode {
+struct FloatLiteralExpression : public ASTNode {
   FloatLiteralExpression(double value) : value(value) {}
   double value;
 
   void accept(Visitor& v) override;
 };
 
-struct BinaryExpression : public ExpressionNode {
-  BinaryExpression(TokenType op, std::unique_ptr<ExpressionNode> lhs,
-                   std::unique_ptr<ExpressionNode> rhs)
+struct BinaryExpression : public ASTNode {
+  BinaryExpression(TokenType op, std::unique_ptr<ASTNode> lhs,
+                   std::unique_ptr<ASTNode> rhs)
       : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
   TokenType op;
-  std::unique_ptr<ExpressionNode> lhs, rhs;
+  std::unique_ptr<ASTNode> lhs, rhs;
 
   void accept(Visitor& v) override;
 };
 
-struct VariableExpression : public ExpressionNode {
+struct VariableExpression : public ASTNode {
   VariableExpression(std::string name) : name(std::move(name)) {}
 
   std::string name;
   void accept(Visitor& v) override;
 };
 
-struct Program : public ExpressionNode {
-  std::vector<std::unique_ptr<ExpressionNode>> statements;
+struct Program : public ASTNode {
+  std::vector<std::unique_ptr<ASTNode>> statements;
 
   void accept(Visitor& v) override;
 };
