@@ -50,6 +50,12 @@ Token Lexer::next_token() {
     case '/':
       advance();
       return {TokenType::ForwardSlash, "/"};
+    case '(':
+      advance();
+      return {TokenType::LParen, "("};
+    case ')':
+      advance();
+      return {TokenType::RParen, ")"};
     default:
       if (std::isdigit(current())) return parse_number();
       if (is_identifier_char(current())) return parse_identifier();

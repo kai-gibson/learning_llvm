@@ -44,9 +44,31 @@ std::unique_ptr<ExpressionNode> Parser::parse_float_expression() {
   return std::move(result);
 }
 
+std::unique_ptr<ExpressionNode> Parser::parse_paren_expression() {
+  advance();
+  auto expr = parse_expression(0);
+  if (peek().type != TokenType::RParen) {
+    throw std::runtime_error("Expected ')'");
+  }
+
+  advance();
+  return expr;
+}
+
+std::unique_ptr<ExpressionNode> Parser::parse_primary_expression() {
+  switch (peek().type) {
+    case TokenType::FloatLiteral:
+      return parse_float_expression();
+    case TokenType::LParen:
+      return parse_paren_expression();
+    default:
+      throw std::runtime_error("Unexpected primary expression");
+  }
+}
+
 std::unique_ptr<ExpressionNode> Parser::parse_expression(
     int32_t min_precedence) {
-  auto lhs = parse_float_expression();
+  auto lhs = parse_primary_expression();
 
   while (precedence(peek().type) > min_precedence) {
     auto op = peek().type;

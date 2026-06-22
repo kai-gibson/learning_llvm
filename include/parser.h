@@ -14,6 +14,8 @@ class Parser {
   const Token& peek();
   const Token& consume(TokenType expected);
 
+  std::unique_ptr<ExpressionNode> parse_primary_expression();
+  std::unique_ptr<ExpressionNode> parse_paren_expression();
   std::unique_ptr<ExpressionNode> parse_float_expression();
   std::unique_ptr<ExpressionNode> parse_binary_expression(
       std::unique_ptr<ExpressionNode> lhs, int32_t min_precedence);

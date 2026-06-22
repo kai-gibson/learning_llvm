@@ -6,7 +6,6 @@
 #include <cctype>
 #include <cstdint>
 #include <ostream>
-#include <source_location>
 #include <string>
 #include <vector>
 
@@ -17,12 +16,14 @@ enum class TokenType : int8_t {
   ForwardSlash,
   FloatLiteral,
   Identifier,
+  LParen,
+  RParen,
   EndOfFile,
 };
 
-constexpr std::array<const char*, 7> TOKEN_TYPE_STR = {
-    "Plus",         "Minus",      "Asterisk",  "ForwardSlash",
-    "FloatLiteral", "Identifier", "EndOfFile",
+constexpr std::array<const char*, 9> TOKEN_TYPE_STR = {
+    "Plus",       "Minus",  "Asterisk", "ForwardSlash", "FloatLiteral",
+    "Identifier", "LParen", "RParen",   "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {
