@@ -17,6 +17,19 @@ struct PrintVisitor : public Visitor {
     expr.rhs->accept(*this);
     std::cout << ")\n";
   }
+
+  void visit(VariableExpression& expr) override {
+    std::cout << "VariableExpression(" << expr.name << ")";
+  }
+
+  void visit(Program& program) override {
+    std::cout << "Program(";
+    for (const auto& statement : program.statements) {
+      statement->accept(*this);
+    }
+
+    std::cout << ")";
+  }
 };
 
 #endif  // PRINT_VISITOR_H

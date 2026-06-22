@@ -4,12 +4,14 @@
 
 int32_t precedence(TokenType t) {
   switch (t) {
+    case TokenType::Assignment:
+      return 1;
     case TokenType::Plus:
     case TokenType::Minus:
-      return 1;
+      return 2;
     case TokenType::Asterisk:
     case TokenType::ForwardSlash:
-      return 2;
+      return 3;
     default:
       return 0;
   }
@@ -55,12 +57,21 @@ std::unique_ptr<ExpressionNode> Parser::parse_paren_expression() {
   return expr;
 }
 
+std::unique_ptr<ExpressionNode> Parser::parse_identifier_expression() {
+  std::string name = peek().value;
+  advance();
+
+  return std::make_unique<VariableExpression>(name);
+}
+
 std::unique_ptr<ExpressionNode> Parser::parse_primary_expression() {
   switch (peek().type) {
     case TokenType::FloatLiteral:
       return parse_float_expression();
     case TokenType::LParen:
       return parse_paren_expression();
+    case TokenType::Identifier:
+      return parse_identifier_expression();
     default:
       throw std::runtime_error("Unexpected primary expression");
   }
@@ -82,5 +93,11 @@ std::unique_ptr<ExpressionNode> Parser::parse_expression(
 }
 
 std::unique_ptr<ExpressionNode> Parser::parse_top_level() {
-  return parse_expression(0);
+  auto program = std::make_unique<Program>();
+
+  while (peek().type != TokenType::EndOfFile) {
+    program->statements.push_back(parse_expression(0));
+  }
+
+  return std::move(program);
 }

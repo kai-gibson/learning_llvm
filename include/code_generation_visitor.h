@@ -22,6 +22,8 @@ class CodegenVisitor : public Visitor {
   void finalise();
   void visit(BinaryExpression& expr) override;
   void visit(FloatLiteralExpression& expr) override;
+  void visit(VariableExpression& expr) override;
+  void visit(Program& expr) override;
 
   llvm::Value* emit(ExpressionNode& expr);
   void compile();
@@ -30,8 +32,11 @@ class CodegenVisitor : public Visitor {
   std::unique_ptr<llvm::Module> llvm_module;
   std::unique_ptr<llvm::IRBuilder<>> llvm_builder;
 
+  std::unordered_map<std::string, llvm::Value*> named_values;
+
  private:
   llvm::Value* result;
+  llvm::Function* current_function;
 };
 
 #endif  // CODE_GENERATION_VISITOR_H

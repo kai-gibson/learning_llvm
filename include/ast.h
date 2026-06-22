@@ -29,4 +29,17 @@ struct BinaryExpression : public ExpressionNode {
   void accept(Visitor& v) override;
 };
 
+struct VariableExpression : public ExpressionNode {
+  VariableExpression(std::string name) : name(std::move(name)) {}
+
+  std::string name;
+  void accept(Visitor& v) override;
+};
+
+struct Program : public ExpressionNode {
+  std::vector<std::unique_ptr<ExpressionNode>> statements;
+
+  void accept(Visitor& v) override;
+};
+
 #endif  // AST_H

@@ -19,6 +19,8 @@ CodegenVisitor::CodegenVisitor() {
   auto* main_fn = llvm::Function::Create(
       main_type, llvm::Function::ExternalLinkage, "main", *llvm_module);
 
+  current_function = main_fn;
+
   auto* entry = llvm::BasicBlock::Create(*llvm_context, "entry", main_fn);
   llvm_builder->SetInsertPoint(entry);
 }
@@ -43,6 +45,19 @@ void CodegenVisitor::compile() {
 }
 
 void CodegenVisitor::visit(BinaryExpression& expr) {
+  if (expr.op == TokenType::Assignment) {
+    auto* var = dynamic_cast<VariableExpression*>(expr.lhs.get());
+    if (!var) throw std::runtime_error("LHS of Assignment must be variable");
+    auto r = emit(*expr.rhs);
+
+    auto* alloca = llvm_builder->CreateAlloca(
+        llvm::Type::getDoubleTy(*llvm_context), nullptr, var->name);
+    llvm_builder->CreateStore(r, alloca);
+    named_values[var->name] = alloca;
+    result = r;
+    return;
+  }
+
   auto l = emit(*expr.lhs);
   auto r = emit(*expr.rhs);
 
@@ -68,4 +83,17 @@ void CodegenVisitor::visit(BinaryExpression& expr) {
 
 void CodegenVisitor::visit(FloatLiteralExpression& expr) {
   result = llvm::ConstantFP::get(*llvm_context, llvm::APFloat(expr.value));
+}
+
+void CodegenVisitor::visit(VariableExpression& expr) {
+  auto* alloca = named_values[expr.name];
+  if (!alloca) throw std::runtime_error("Unknown variable name");
+  result = llvm_builder->CreateLoad(llvm::Type::getDoubleTy(*llvm_context),
+                                    alloca, expr.name);
+}
+
+void CodegenVisitor::visit(Program& expr) {
+  for (auto& statement : expr.statements) {
+    result = emit(*statement);
+  }
 }

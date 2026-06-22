@@ -18,12 +18,13 @@ enum class TokenType : int8_t {
   Identifier,
   LParen,
   RParen,
+  Assignment,
   EndOfFile,
 };
 
-constexpr std::array<const char*, 9> TOKEN_TYPE_STR = {
+constexpr std::array<const char*, 10> TOKEN_TYPE_STR = {
     "Plus",       "Minus",  "Asterisk", "ForwardSlash", "FloatLiteral",
-    "Identifier", "LParen", "RParen",   "EndOfFile",
+    "Identifier", "LParen", "RParen",   "Assignment",   "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {
