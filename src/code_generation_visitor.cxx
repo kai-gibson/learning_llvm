@@ -44,28 +44,25 @@ void CodegenVisitor::compile() {
   link("output.o", "output");
 }
 
-void CodegenVisitor::visit(BinaryExpression& expr) {
-  if (expr.op == TokenType::Assignment) {
-    auto* var = dynamic_cast<VariableExpression*>(expr.lhs.get());
-    if (!var) throw std::runtime_error("LHS of Assignment must be variable");
-
-    auto* exists = named_values[var->name];
-    if (exists) {
-      throw std::runtime_error(
-          "Cannot allocate same variable twice; use `set x = 1` to modify "
-          "value");
-    }
-
-    auto r = emit(*expr.rhs);
-
-    auto* alloca = llvm_builder->CreateAlloca(
-        llvm::Type::getDoubleTy(*llvm_context), nullptr, var->name);
-    llvm_builder->CreateStore(r, alloca);
-    named_values[var->name] = alloca;
-    result = r;
-    return;
+void CodegenVisitor::visit(VariableDeclarationStatement& stmt) {
+  auto* exists = named_values[stmt.name];
+  if (exists) {
+    throw std::runtime_error(
+        "Cannot declare same variable twice; use `set x = 1` to modify "
+        "value");
   }
 
+  auto r = emit(*stmt.value);
+
+  auto* alloca = llvm_builder->CreateAlloca(
+      llvm::Type::getDoubleTy(*llvm_context), nullptr, stmt.name);
+  llvm_builder->CreateStore(r, alloca);
+  named_values[stmt.name] = alloca;
+  result = r;
+  return;
+}
+
+void CodegenVisitor::visit(BinaryExpression& expr) {
   auto l = emit(*expr.lhs);
   auto r = emit(*expr.rhs);
 

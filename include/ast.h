@@ -36,6 +36,15 @@ struct VariableExpression : public ASTNode {
   void accept(Visitor& v) override;
 };
 
+struct VariableDeclarationStatement : public ASTNode {
+  VariableDeclarationStatement(std::string name, std::unique_ptr<ASTNode> value)
+      : name(std::move(name)), value(std::move(value)) {}
+
+  std::string name;
+  std::unique_ptr<ASTNode> value;
+  void accept(Visitor& v) override;
+};
+
 struct Program : public ASTNode {
   std::vector<std::unique_ptr<ASTNode>> statements;
 

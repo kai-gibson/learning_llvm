@@ -4,14 +4,12 @@
 
 int32_t precedence(TokenType t) {
   switch (t) {
-    case TokenType::Assignment:
-      return 1;
     case TokenType::Plus:
     case TokenType::Minus:
-      return 2;
+      return 1;
     case TokenType::Asterisk:
     case TokenType::ForwardSlash:
-      return 3;
+      return 2;
     default:
       return 0;
   }
@@ -73,7 +71,8 @@ std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
     case TokenType::Identifier:
       return parse_identifier_expression();
     default:
-      throw std::runtime_error("Unexpected primary expression");
+      throw std::runtime_error(std::format("Unexpected primary expression: {}",
+                                           token_type_to_str(peek().type)));
   }
 }
 
@@ -91,11 +90,29 @@ std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {
   return lhs;
 }
 
+std::unique_ptr<ASTNode> Parser::parse_variable_declaration() {
+  auto name = peek().value;
+  advance();
+
+  consume(TokenType::Assignment);
+  return std::make_unique<VariableDeclarationStatement>(name,
+                                                        parse_expression(0));
+};
+
+std::unique_ptr<ASTNode> Parser::parse_statement() {
+  switch (peek().type) {
+    case TokenType::Identifier:
+      return parse_variable_declaration();
+    default:
+      throw std::runtime_error("Unexpected statement");
+  }
+};
+
 std::unique_ptr<ASTNode> Parser::parse_top_level() {
   auto program = std::make_unique<Program>();
 
   while (peek().type != TokenType::EndOfFile) {
-    program->statements.push_back(parse_expression(0));
+    program->statements.push_back(parse_statement());
   }
 
   return std::move(program);

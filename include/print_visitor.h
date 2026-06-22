@@ -22,10 +22,19 @@ struct PrintVisitor : public Visitor {
     std::cout << "VariableExpression(" << expr.name << ")";
   }
 
+  void visit(VariableDeclarationStatement& stmt) override {
+    std::cout << "VariableDeclarationStatement(Name(\"" << stmt.name
+              << "\"), Value(";
+    stmt.value->accept(*this);
+
+    std::cout << ")";
+  }
+
   void visit(Program& program) override {
     std::cout << "Program(";
     for (const auto& statement : program.statements) {
       statement->accept(*this);
+      std::cout << ",";
     }
 
     std::cout << ")";
