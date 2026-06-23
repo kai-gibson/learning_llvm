@@ -1,15 +1,58 @@
 #ifndef AST_H
 #define AST_H
 
+#include <unordered_map>
+
 #include "lexer.h"
 
 // forward declaration
 struct Visitor;
 
+enum class TypeId : uint8_t {
+  Bool,
+  Int8,
+  Int16,
+  Int32,
+  Int64,
+  UInt8,
+  UInt16,
+  UInt32,
+  UInt64,
+  Float32,
+  Float64,
+  String,
+  UserDefined,
+};
+
+const std::unordered_map<std::string, TypeId> builtin_types = {
+    {"Bool", TypeId::Bool},
+    {"Int8", TypeId::Int8},
+    {"Int16", TypeId::Int16},
+    {"Int32", TypeId::Int32},
+    {"Int64", TypeId::Int64},
+    {"UInt8", TypeId::UInt8},
+    {"UInt16", TypeId::UInt16},
+    {"UInt32", TypeId::UInt32},
+    {"UInt64", TypeId::UInt64},
+    {"Float32", TypeId::Float32},
+    {"Float64", TypeId::Float64},
+    {"String", TypeId::String},
+    {"UserDefined", TypeId::UserDefined},
+};
+
+TypeId get_type_id(const std::string& s);
+
+struct Type {
+  TypeId type_id;
+  std::string identifier;
+};
+
 class ASTNode {
  public:
   virtual ~ASTNode() = default;
   virtual void accept(Visitor& v) = 0;
+
+  std::optional<Type> resolved_type;
 };
 
 struct FloatLiteralExpression : public ASTNode {
@@ -46,13 +89,16 @@ struct VariableAssignmentStatement : public ASTNode {
 };
 
 struct VariableDeclarationStatement : public ASTNode {
-  VariableDeclarationStatement(std::string name, std::unique_ptr<ASTNode> value,
-                               std::unique_ptr<ASTNode> type = nullptr)
-      : name(std::move(name)), value(std::move(value)), type(std::move(type)) {}
+  VariableDeclarationStatement(
+      std::string name, std::unique_ptr<ASTNode> value,
+      std::unique_ptr<ASTNode> type_identifier = nullptr)
+      : name(std::move(name)),
+        value(std::move(value)),
+        type_identifier(std::move(type_identifier)) {}
 
   std::string name;
   std::unique_ptr<ASTNode> value;
-  std::unique_ptr<ASTNode> type;
+  std::unique_ptr<ASTNode> type_identifier;
   void accept(Visitor& v) override;
 };
 

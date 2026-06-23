@@ -10,6 +10,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "parser.h"
 #include "print_visitor.h"
+#include "type_check_visitor.h"
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -30,6 +31,10 @@ int main(int argc, char** argv) {
   Parser parser(tokens);
 
   auto top = parser.parse_top_level();
+  TypeCheckVisitor type_checker;
+
+  top->accept(type_checker);
+
   PrintVisitor v;
   top->accept(v);
 

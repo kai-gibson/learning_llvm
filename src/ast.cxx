@@ -13,3 +13,10 @@ inline void FunctionDeclaration::accept(Visitor& v) { v.visit(*this); }
 inline void FunctionCallExpression::accept(Visitor& v) { v.visit(*this); }
 inline void ReturnStatement::accept(Visitor& v) { v.visit(*this); }
 inline void TypeExpression::accept(Visitor& v) { v.visit(*this); }
+
+TypeId get_type_id(const std::string& s) {
+  auto it = builtin_types.find(s);
+  if (it != builtin_types.end()) return it->second;
+
+  return TypeId::UserDefined;
+}

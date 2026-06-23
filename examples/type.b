@@ -1,3 +1,5 @@
 func main() 
-  x: Int32 = 10
+  x: Float64 = 10
+  y = 12
+  z = x + y
 end

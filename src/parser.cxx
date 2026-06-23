@@ -111,17 +111,17 @@ std::unique_ptr<ASTNode> Parser::parse_variable_declaration() {
   auto name = peek().value;
   advance();
 
-  std::unique_ptr<ASTNode> type = nullptr;
+  std::unique_ptr<ASTNode> type_identifier = nullptr;
   // explicitly typed variable
   if (peek().type == TokenType::Colon) {
     advance();
 
-    type = parse_type_expression();
+    type_identifier = parse_type_expression();
   }
 
   consume(TokenType::Assignment);
   return std::make_unique<VariableDeclarationStatement>(
-      name, parse_expression(0), std::move(type));
+      name, parse_expression(0), std::move(type_identifier));
 };
 
 std::unique_ptr<ASTNode> Parser::parse_variable_assignment() {

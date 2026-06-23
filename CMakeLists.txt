@@ -46,6 +46,7 @@ add_executable(learning_llvm
   src/parser.cxx
   src/ast.cxx
   src/code_generation_visitor.cxx
+  src/type_check_visitor.cxx
 )
 
 # Link LLVM libraries
