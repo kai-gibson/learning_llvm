@@ -42,6 +42,7 @@ class Parser {
   std::unique_ptr<ASTNode> parse_function_declaration();
   std::unique_ptr<ASTNode> parse_return_statement();
   std::unique_ptr<ASTNode> parse_type_expression();
+  std::unique_ptr<ASTNode> parse_int_expression();
 
   // vars
   const Tokens& tokens;

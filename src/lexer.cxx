@@ -8,14 +8,18 @@ char Lexer::peek() { return index + 1 < data.size() ? data[index + 1] : '\0'; }
 
 Token Lexer::parse_number() {
   size_t start = index;
+
+  auto token_type = TokenType::IntLiteral;
+
   while (std::isdigit(current())) advance();
 
   if (current() == '.' && std::isdigit(peek())) {
+    token_type = TokenType::FloatLiteral;
     advance();
     while (std::isdigit(current())) advance();
   }
 
-  return {TokenType::FloatLiteral, data.substr(start, index - start)};
+  return {token_type, data.substr(start, index - start)};
 }
 
 bool Lexer::is_identifier_char(char chr) {

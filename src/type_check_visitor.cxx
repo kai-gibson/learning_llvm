@@ -22,6 +22,11 @@ void TypeCheckVisitor::visit(FloatLiteralExpression& expr) {
   expr.resolved_type = result;
 }
 
+void TypeCheckVisitor::visit(IntLiteralExpression& expr) {
+  result = Type{.type_id = TypeId::Int32, .identifier = "Int32"};
+  expr.resolved_type = result;
+}
+
 void TypeCheckVisitor::visit(VariableExpression& expr) {
   auto it = variable_map.find(expr.name);
   if (it == variable_map.end()) {

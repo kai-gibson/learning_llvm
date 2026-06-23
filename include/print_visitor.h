@@ -23,6 +23,12 @@ struct PrintVisitor : public Visitor {
     std::cout << ")";
   }
 
+  void visit(IntLiteralExpression& expr) override {
+    std::cout << "IntLiteralExpression(" << expr.value;
+    print_resolved_type(expr);
+    std::cout << ")";
+  }
+
   void visit(BinaryExpression& expr) override {
     std::cout << "BinaryExpression(" << token_type_to_str(expr.op);
     print_resolved_type(expr);

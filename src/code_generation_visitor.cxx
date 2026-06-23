@@ -20,6 +20,37 @@ llvm::Value* CodegenVisitor::emit(ASTNode& expr) {
   return result;
 }
 
+llvm::Type* CodegenVisitor::get_llvm_type(Type& type) {
+  switch (type.type_id) {
+    case TypeId::Bool:
+      return llvm::Type::getInt1Ty(*llvm_context);
+    case TypeId::Int8:
+      return llvm::Type::getInt8Ty(*llvm_context);
+    case TypeId::Int16:
+      return llvm::Type::getInt16Ty(*llvm_context);
+    case TypeId::Int32:
+      return llvm::Type::getInt32Ty(*llvm_context);
+    case TypeId::Int64:
+      return llvm::Type::getInt64Ty(*llvm_context);
+    case TypeId::UInt8:
+      return llvm::Type::getInt8Ty(*llvm_context);
+    case TypeId::UInt16:
+      return llvm::Type::getInt16Ty(*llvm_context);
+    case TypeId::UInt32:
+      return llvm::Type::getInt32Ty(*llvm_context);
+    case TypeId::UInt64:
+      return llvm::Type::getInt64Ty(*llvm_context);
+    case TypeId::Float32:
+      return llvm::Type::getFloatTy(*llvm_context);
+    case TypeId::Float64:
+      return llvm::Type::getDoubleTy(*llvm_context);
+    case TypeId::String:
+    case TypeId::UserDefined:
+      throw std::runtime_error(
+          std::format("Datatype {} not implemented", type.identifier));
+  }
+}
+
 void CodegenVisitor::finalise() {}
 
 void CodegenVisitor::compile() {
@@ -37,8 +68,12 @@ void CodegenVisitor::visit(VariableDeclarationStatement& stmt) {
 
   auto r = emit(*stmt.value);
 
-  auto* alloca = llvm_builder->CreateAlloca(
-      llvm::Type::getDoubleTy(*llvm_context), nullptr, stmt.name);
+  if (!stmt.resolved_type) {
+    throw std::runtime_error("Unable to resolve variable type");
+  }
+
+  auto type = get_llvm_type(*stmt.resolved_type);
+  auto* alloca = llvm_builder->CreateAlloca(type, nullptr, stmt.name);
   llvm_builder->CreateStore(r, alloca);
   named_values[stmt.name] = alloca;
   result = r;
@@ -67,7 +102,7 @@ void CodegenVisitor::visit(BinaryExpression& expr) {
 
   switch (expr.op) {
     case TokenType::Plus:
-      result = llvm_builder->CreateFAdd(l, r, "addtmp");
+      result = llvm_builder->CreateAdd(l, r, "addtmp");
       break;
     case TokenType::Minus:
       result = llvm_builder->CreateFSub(l, r, "subtmp");
@@ -87,13 +122,23 @@ void CodegenVisitor::visit(FloatLiteralExpression& expr) {
   result = llvm::ConstantFP::get(*llvm_context, llvm::APFloat(expr.value));
 }
 
+void CodegenVisitor::visit(IntLiteralExpression& expr) {
+  result =
+      llvm::ConstantInt::get(*llvm_context, llvm::APInt(32, expr.value, true));
+}
+
 void CodegenVisitor::visit(VariableExpression& expr) {
   auto* alloca = named_values[expr.name];
   if (!alloca)
     throw std::runtime_error(
         std::format("Unknown variable name: {}", expr.name));
-  result = llvm_builder->CreateLoad(llvm::Type::getDoubleTy(*llvm_context),
-                                    alloca, expr.name);
+
+  if (!expr.resolved_type) {
+    throw std::runtime_error("Unable to resolve variable expression type");
+  }
+
+  auto type = get_llvm_type(*expr.resolved_type);
+  result = llvm_builder->CreateLoad(type, alloca, expr.name);
 }
 
 void CodegenVisitor::visit(Program& expr) {

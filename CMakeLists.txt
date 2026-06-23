@@ -47,6 +47,7 @@ add_executable(learning_llvm
   src/ast.cxx
   src/code_generation_visitor.cxx
   src/type_check_visitor.cxx
+  src/operation_map.cxx
 )
 
 # Link LLVM libraries

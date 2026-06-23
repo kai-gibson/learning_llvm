@@ -31,6 +31,7 @@ class CodegenVisitor : public Visitor {
   void visit(FunctionCallExpression& stmt) override;
   void visit(ReturnStatement& stmt) override;
   void visit(TypeExpression& stmt) override;
+  void visit(IntLiteralExpression& stmt) override;
 
   llvm::Value* emit(ASTNode& expr);
   void compile();
@@ -40,6 +41,8 @@ class CodegenVisitor : public Visitor {
   std::unique_ptr<llvm::IRBuilder<>> llvm_builder;
 
   std::unordered_map<std::string, llvm::Value*> named_values;
+
+  llvm::Type* get_llvm_type(Type& type);
 
  private:
   llvm::Value* result;

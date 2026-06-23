@@ -15,6 +15,7 @@ struct Visitor {
   virtual void visit(FunctionCallExpression& expr) = 0;
   virtual void visit(ReturnStatement& expr) = 0;
   virtual void visit(TypeExpression& expr) = 0;
+  virtual void visit(IntLiteralExpression& expr) = 0;
 };
 
 #endif  // VISITOR_H

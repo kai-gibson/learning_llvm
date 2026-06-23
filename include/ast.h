@@ -147,4 +147,11 @@ struct TypeExpression : public ASTNode {
 
   void accept(Visitor& v) override;
 };
+
+struct IntLiteralExpression : public ASTNode {
+  IntLiteralExpression(int32_t value) : value(value) {}
+
+  int32_t value;
+  void accept(Visitor& v) override;
+};
 #endif  // AST_H

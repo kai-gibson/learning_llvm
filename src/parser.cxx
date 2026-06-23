@@ -74,6 +74,8 @@ std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
   switch (peek().type) {
     case TokenType::FloatLiteral:
       return parse_float_expression();
+    case TokenType::IntLiteral:
+      return parse_int_expression();
     case TokenType::LParen:
       return parse_paren_expression();
     case TokenType::Identifier:
@@ -82,6 +84,16 @@ std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
       throw std::runtime_error(std::format("Unexpected primary expression: {}",
                                            token_type_to_str(peek().type)));
   }
+}
+
+std::unique_ptr<ASTNode> Parser::parse_int_expression() {
+  auto token = peek();
+  std::clog << "converting: " << token.value << " to Int32...\n";
+  auto value = std::stoi(token.value);
+  auto result = std::make_unique<IntLiteralExpression>(value);
+  advance();
+
+  return std::move(result);
 }
 
 std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {

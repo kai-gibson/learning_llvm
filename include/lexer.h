@@ -16,6 +16,8 @@ enum class TokenType : int8_t {
   Asterisk,
   ForwardSlash,
   FloatLiteral,
+  IntLiteral,
+  StringLiteral,
   Identifier,
   LParen,
   RParen,
@@ -38,11 +40,11 @@ const std::unordered_map<std::string, TokenType> keywords = {
     {"return", TokenType::Return},
 };
 
-constexpr std::array<const char*, 17> TOKEN_TYPE_STR = {
-    "Plus",         "Minus",      "Asterisk", "ForwardSlash",
-    "FloatLiteral", "Identifier", "LParen",   "RParen",
-    "Assignment",   "Colon",      "Set",      "Show",
-    "Function",     "End",        "Return",   "EndOfFile",
+constexpr std::array<const char*, 19> TOKEN_TYPE_STR = {
+    "Plus",       "Minus",         "Asterisk",   "ForwardSlash", "FloatLiteral",
+    "IntLiteral", "StringLiteral", "Identifier", "LParen",       "RParen",
+    "Assignment", "Colon",         "Set",        "Show",         "Function",
+    "End",        "Return",        "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {
