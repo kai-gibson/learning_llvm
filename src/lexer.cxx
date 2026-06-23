@@ -26,6 +26,24 @@ bool Lexer::is_identifier_char(char chr) {
   return std::isalnum(chr) || chr == '_' || chr == '-';
 }
 
+bool Lexer::is_symbol_char(char chr) {
+  switch (chr) {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '(':
+    case ')':
+    case '=':
+    case ':':
+    case '<':
+    case '>':
+      return true;
+    default:
+      return false;
+  }
+}
+
 Token Lexer::parse_identifier() {
   size_t start = index;
   while (is_identifier_char(current())) advance();
@@ -44,39 +62,32 @@ Token Lexer::next_token() {
     return {TokenType::EndOfFile, ""};
   }
 
-  switch (current()) {
-    case '+':
-      advance();
-      return {TokenType::Plus, "+"};
-    case '-':
-      advance();
-      return {TokenType::Minus, "-"};
-    case '*':
-      advance();
-      return {TokenType::Asterisk, "*"};
-    case '/':
-      advance();
-      return {TokenType::ForwardSlash, "/"};
-    case '(':
-      advance();
-      return {TokenType::LParen, "("};
-    case ')':
-      advance();
-      return {TokenType::RParen, ")"};
-    case '=':
-      advance();
-      return {TokenType::Assignment, "="};
-    case ':':
-      advance();
-      return {TokenType::Colon, ":"};
+  if (is_symbol_char(current())) return parse_symbol();
+  if (std::isdigit(current())) return parse_number();
+  if (is_identifier_char(current())) return parse_identifier();
 
-    default:
-      if (std::isdigit(current())) return parse_number();
-      if (is_identifier_char(current())) return parse_identifier();
+  advance();
+  return {TokenType::EndOfFile, ""};
+}
 
-      advance();
-      return {TokenType::EndOfFile, ""};
+Token Lexer::parse_symbol() {
+  if (current() == '(') {
+    advance();
+    return {TokenType::LParen, "("};
   }
+  if (current() == ')') {
+    advance();
+    return {TokenType::RParen, ")"};
+  }
+
+  size_t start = index;
+  while (is_symbol_char(current())) advance();
+  auto word = data.substr(start, index - start);
+
+  auto it = symbols.find(word);
+  if (it != symbols.end()) return {it->second, word};
+
+  throw std::runtime_error(std::format("Error: Unknown token: {}", word));
 }
 
 Tokens Lexer::tokenise() {

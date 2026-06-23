@@ -23,6 +23,13 @@ enum class TokenType : int8_t {
   RParen,
   Assignment,
   Colon,
+  LessThan,
+  GreaterThan,
+  LessThanEquals,
+  GreaterThanEquals,
+  Equals,
+  NotEquals,
+  Not,
 
   // Keywords
   Set,
@@ -40,11 +47,50 @@ const std::unordered_map<std::string, TokenType> keywords = {
     {"return", TokenType::Return},
 };
 
-constexpr std::array<const char*, 19> TOKEN_TYPE_STR = {
-    "Plus",       "Minus",         "Asterisk",   "ForwardSlash", "FloatLiteral",
-    "IntLiteral", "StringLiteral", "Identifier", "LParen",       "RParen",
-    "Assignment", "Colon",         "Set",        "Show",         "Function",
-    "End",        "Return",        "EndOfFile",
+const std::unordered_map<std::string, TokenType> symbols = {
+    {"+", TokenType::Plus},
+    {"-", TokenType::Minus},
+    {"*", TokenType::Asterisk},
+    {"/", TokenType::ForwardSlash},
+    {"(", TokenType::LParen},
+    {")", TokenType::RParen},
+    {"=", TokenType::Assignment},
+    {":", TokenType::Colon},
+    {"<", TokenType::LessThan},
+    {">", TokenType::GreaterThan},
+    {"<=", TokenType::LessThanEquals},
+    {">=", TokenType::GreaterThanEquals},
+    {"==", TokenType::Equals},
+    {"!=", TokenType::NotEquals},
+    {"!", TokenType::Not},
+};
+
+constexpr std::array<const char*, 25> TOKEN_TYPE_STR = {
+    "Plus",
+    "Minus",
+    "Asterisk",
+    "ForwardSlash",
+    "FloatLiteral",
+    "IntLiteral",
+    "StringLiteral",
+    "Identifier",
+    "LParen",
+    "RParen",
+    "Assignment",
+    "Colon",
+    "LessThan",
+    "GreaterThan",
+    "LessThanEquals",
+    "GreaterThanEquals",
+    "Equals",
+    "NotEquals",
+    "Not",
+    "Set",
+    "Show",
+    "Function",
+    "End",
+    "Return",
+    "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {
@@ -93,8 +139,10 @@ class Lexer {
 
   Token parse_number();
   Token parse_identifier();
+  Token parse_symbol();
   Token next_token();
   bool is_identifier_char(char chr);
+  bool is_symbol_char(char chr);
 };
 
 #endif  // LEXER_H

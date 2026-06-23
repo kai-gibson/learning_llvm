@@ -1,6 +1,7 @@
 #include "code_generation_visitor.h"
 
 #include "compiler.h"
+#include "operation_map.h"
 
 CodegenVisitor::CodegenVisitor() {
   llvm_context = std::make_unique<llvm::LLVMContext>();
@@ -100,22 +101,12 @@ void CodegenVisitor::visit(BinaryExpression& expr) {
 
   if (!l || !r) throw std::runtime_error("codegen failed on BinaryExpression");
 
-  switch (expr.op) {
-    case TokenType::Plus:
-      result = llvm_builder->CreateAdd(l, r, "addtmp");
-      break;
-    case TokenType::Minus:
-      result = llvm_builder->CreateFSub(l, r, "subtmp");
-      break;
-    case TokenType::Asterisk:
-      result = llvm_builder->CreateFMul(l, r, "multmp");
-      break;
-    case TokenType::ForwardSlash:
-      result = llvm_builder->CreateFDiv(l, r, "divtmp");
-      break;
-    default:
-      throw std::runtime_error("Unsupported binary operation");
+  if (!expr.resolved_type) {
+    throw std::runtime_error("Couldn't resolve type for binary expression");
   }
+
+  auto builder = build_type_operations(*expr.resolved_type, *llvm_builder);
+  result = builder->apply(expr.op, l, r);
 }
 
 void CodegenVisitor::visit(FloatLiteralExpression& expr) {

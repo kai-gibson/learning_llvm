@@ -15,6 +15,7 @@ void TypeCheckVisitor::visit(BinaryExpression& expr) {
   }
 
   result = Type{.type_id = rhs.type_id, .identifier = rhs.identifier};
+  expr.resolved_type = result;
 }
 
 void TypeCheckVisitor::visit(FloatLiteralExpression& expr) {
@@ -90,6 +91,8 @@ void TypeCheckVisitor::visit(VariableAssignmentStatement& stmt) {
 void TypeCheckVisitor::visit(ShowStatement& stmt) { (void)stmt; }
 
 void TypeCheckVisitor::visit(FunctionDeclaration& func) {
+  // scope variable type map to function
+  variable_map.clear();
   for (const auto& stmt : func.statements) {
     stmt->accept(*this);
   }
