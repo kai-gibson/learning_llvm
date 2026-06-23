@@ -13,7 +13,7 @@ struct PrintVisitor : public Visitor {
 
   void print_resolved_type(ASTNode& node) {
     if (node.resolved_type.has_value()) {
-      std::cout << "ResolvedType(" << node.resolved_type->identifier << ")";
+      std::cout << ", ResolvedType(" << node.resolved_type->identifier << ")";
     }
   }
 
