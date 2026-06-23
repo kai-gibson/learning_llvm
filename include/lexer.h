@@ -20,24 +20,29 @@ enum class TokenType : int8_t {
   LParen,
   RParen,
   Assignment,
+  Colon,
+
+  // Keywords
   Set,
   Show,
   Function,
   End,
+  Return,
+  // EOF
   EndOfFile,
 };
 
 const std::unordered_map<std::string, TokenType> keywords = {
-    {"set", TokenType::Set},
-    {"show", TokenType::Show},
-    {"func", TokenType::Function},
-    {"end", TokenType::End},
+    {"set", TokenType::Set},       {"show", TokenType::Show},
+    {"func", TokenType::Function}, {"end", TokenType::End},
+    {"return", TokenType::Return},
 };
 
-constexpr std::array<const char*, 14> TOKEN_TYPE_STR = {
-    "Plus",       "Minus",    "Asterisk", "ForwardSlash", "FloatLiteral",
-    "Identifier", "LParen",   "RParen",   "Assignment",   "Set",
-    "Show",       "Function", "End",      "EndOfFile",
+constexpr std::array<const char*, 17> TOKEN_TYPE_STR = {
+    "Plus",         "Minus",      "Asterisk", "ForwardSlash",
+    "FloatLiteral", "Identifier", "LParen",   "RParen",
+    "Assignment",   "Colon",      "Set",      "Show",
+    "Function",     "End",        "Return",   "EndOfFile",
 };
 
 inline const char* token_type_to_str(TokenType t) {

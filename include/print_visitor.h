@@ -38,6 +38,13 @@ struct PrintVisitor : public Visitor {
     std::cout << pad() << "Value(";
     stmt.value->accept(*this);
     std::cout << ")";
+
+    if (stmt.type) {
+      std::cout << pad() << "Type(";
+      stmt.type->accept(*this);
+      std::cout << ")";
+    }
+
     indent--;
     std::cout << ")";
   }
@@ -83,6 +90,26 @@ struct PrintVisitor : public Visitor {
       func->accept(*this);
       std::cout << "\n";
     }
+    indent--;
+    std::cout << ")\n";
+  }
+
+  void visit(ReturnStatement& ret) override {
+    std::cout << "ReturnStatement(\n";
+    indent++;
+
+    ret.value->accept(*this);
+
+    indent--;
+    std::cout << ")\n";
+  }
+
+  void visit(TypeExpression& ret) override {
+    std::cout << "TypeExpression(\n";
+    indent++;
+
+    std::cout << "Name(\"" << ret.name << "\")";
+
     indent--;
     std::cout << ")\n";
   }

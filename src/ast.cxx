@@ -11,3 +11,5 @@ inline void VariableAssignmentStatement::accept(Visitor& v) { v.visit(*this); }
 inline void ShowStatement::accept(Visitor& v) { v.visit(*this); }
 inline void FunctionDeclaration::accept(Visitor& v) { v.visit(*this); }
 inline void FunctionCallExpression::accept(Visitor& v) { v.visit(*this); }
+inline void ReturnStatement::accept(Visitor& v) { v.visit(*this); }
+inline void TypeExpression::accept(Visitor& v) { v.visit(*this); }

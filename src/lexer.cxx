@@ -62,6 +62,9 @@ Token Lexer::next_token() {
     case '=':
       advance();
       return {TokenType::Assignment, "="};
+    case ':':
+      advance();
+      return {TokenType::Colon, ":"};
 
     default:
       if (std::isdigit(current())) return parse_number();

@@ -98,13 +98,30 @@ std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {
   return lhs;
 }
 
+std::unique_ptr<ASTNode> Parser::parse_type_expression() {
+  auto [_, name] = consume(TokenType::Identifier);
+
+  if (!is_builtin_type(name))
+    throw std::runtime_error(std::format("Unknown type: {}", name));
+
+  return std::make_unique<TypeExpression>(name);
+}
+
 std::unique_ptr<ASTNode> Parser::parse_variable_declaration() {
   auto name = peek().value;
   advance();
 
+  std::unique_ptr<ASTNode> type = nullptr;
+  // explicitly typed variable
+  if (peek().type == TokenType::Colon) {
+    advance();
+
+    type = parse_type_expression();
+  }
+
   consume(TokenType::Assignment);
-  return std::make_unique<VariableDeclarationStatement>(name,
-                                                        parse_expression(0));
+  return std::make_unique<VariableDeclarationStatement>(
+      name, parse_expression(0), std::move(type));
 };
 
 std::unique_ptr<ASTNode> Parser::parse_variable_assignment() {
@@ -130,6 +147,8 @@ std::unique_ptr<ASTNode> Parser::parse_statement() {
       return parse_variable_assignment();
     case TokenType::Show:
       return parse_show_statement();
+    case TokenType::Return:
+      return parse_return_statement();
     default:
       throw std::runtime_error("Unexpected statement");
   }
@@ -161,4 +180,9 @@ std::unique_ptr<ASTNode> Parser::parse_top_level() {
   }
 
   return std::move(program);
+}
+
+std::unique_ptr<ASTNode> Parser::parse_return_statement() {
+  consume(TokenType::Return);
+  return std::make_unique<ReturnStatement>(parse_expression(0));
 }

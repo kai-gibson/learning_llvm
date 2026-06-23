@@ -46,11 +46,13 @@ struct VariableAssignmentStatement : public ASTNode {
 };
 
 struct VariableDeclarationStatement : public ASTNode {
-  VariableDeclarationStatement(std::string name, std::unique_ptr<ASTNode> value)
-      : name(std::move(name)), value(std::move(value)) {}
+  VariableDeclarationStatement(std::string name, std::unique_ptr<ASTNode> value,
+                               std::unique_ptr<ASTNode> type = nullptr)
+      : name(std::move(name)), value(std::move(value)), type(std::move(type)) {}
 
   std::string name;
   std::unique_ptr<ASTNode> value;
+  std::unique_ptr<ASTNode> type;
   void accept(Visitor& v) override;
 };
 
@@ -84,4 +86,19 @@ struct Program : public ASTNode {
   void accept(Visitor& v) override;
 };
 
+struct ReturnStatement : public ASTNode {
+  ReturnStatement(std::unique_ptr<ASTNode> value) : value(std::move(value)) {}
+
+  std::unique_ptr<ASTNode> value;
+
+  void accept(Visitor& v) override;
+};
+
+struct TypeExpression : public ASTNode {
+  TypeExpression(std::string name) : name(std::move(name)) {}
+
+  std::string name;
+
+  void accept(Visitor& v) override;
+};
 #endif  // AST_H

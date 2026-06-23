@@ -125,8 +125,18 @@ void CodegenVisitor::visit(FunctionDeclaration& func_declaration) {
 
   for (auto& statement : func_declaration.statements) result = emit(*statement);
 
-  llvm_builder->CreateRet(
-      llvm::ConstantInt::get(llvm::Type::getInt32Ty(*llvm_context), 0));
+  // llvm_builder->CreateRet(
+  //     llvm::ConstantInt::get(llvm::Type::getInt32Ty(*llvm_context), 0));
+}
+
+void CodegenVisitor::visit(ReturnStatement& ret) {
+  auto value = emit(*ret.value);
+
+  llvm_builder->CreateRet(value);
+}
+
+void CodegenVisitor::visit(TypeExpression& ret) {
+  // noop
 }
 
 void CodegenVisitor::visit(FunctionCallExpression& funccall) {
