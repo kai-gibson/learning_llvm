@@ -8,7 +8,7 @@ func main()
 
   set x = x + 20
   
-  my_var: Int8 = 10
+  my_var: Int32 = 10
   set my_var = my_var + 2
 
   return x
