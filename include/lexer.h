@@ -36,13 +36,21 @@ inline std::ostream& operator<<(std::ostream& os, const Tokens& tokens) {
   return os << "]";
 }
 
+struct FileContents {
+  const std::string& name;
+  const std::string& data;
+};
+
 class Lexer {
  public:
-  Lexer(const std::string& file) : data(file) {}
+  Lexer(FileContents file_contents) : data(file_contents.data) {
+    current_location.filename = file_contents.name;
+  }
 
   Tokens tokenise();
 
  private:
+  SourceLocation token_location;
   SourceLocation current_location;
   const std::string& data;
   size_t index{};

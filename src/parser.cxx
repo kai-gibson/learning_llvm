@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "compile_error.h"
+
 int32_t precedence(TokenType t) {
   switch (t) {
     case TokenType::Plus:
@@ -116,8 +118,10 @@ std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {
 std::unique_ptr<ASTNode> Parser::parse_type_expression() {
   auto [_, name, source_location] = consume(TokenType::Identifier);
 
-  if (!is_builtin_type(name))
-    throw std::runtime_error(std::format("Unknown type: {}", name));
+  if (!is_builtin_type(name)) {
+    throw ParseError(source_location, "Unknown type: {}", name);
+    // throw std::runtime_error(std::format("Unknown type: {}", name));
+  }
 
   return std::make_unique<TypeExpression>(name, source_location);
 }

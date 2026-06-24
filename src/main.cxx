@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "code_generation_visitor.h"
+#include "compile_error.h"
 #include "file_io.h"
 #include "lexer.h"
 #include "llvm/IR/Module.h"
@@ -24,7 +25,7 @@ int main(int argc, char** argv) {
     std::cerr << "Error reading file: " << file_data.error().what() << '\n';
   }
 
-  Lexer lexer(*file_data);
+  Lexer lexer(FileContents{.name = filename, .data = *file_data});
   auto tokens = lexer.tokenise();
   // std::cout << "tokens: " << tokens << "\n";
 

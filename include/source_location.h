@@ -2,10 +2,11 @@
 #define SOURCE_LOCATION_H
 
 #include <cstdint>
+#include <string_view>
 
 struct SourceLocation {
-  uint64_t line{1}, column{1};
-  const char* filename = "";
+  uint64_t line{1}, column{0};
+  std::string_view filename = "";
 };
 
 #endif  // SOURCE_LOCATION_H

@@ -19,7 +19,7 @@ Token Lexer::parse_number() {
     while (std::isdigit(current())) advance();
   }
 
-  return {token_type, data.substr(start, index - start), current_location};
+  return {token_type, data.substr(start, index - start), token_location};
 }
 
 bool Lexer::is_identifier_char(char chr) {
@@ -50,34 +50,37 @@ Token Lexer::parse_identifier() {
   auto word = data.substr(start, index - start);
 
   auto it = keywords.find(word);
-  if (it != keywords.end()) return {it->second, word, current_location};
+  if (it != keywords.end()) return {it->second, word, token_location};
 
-  return {TokenType::Identifier, word, current_location};
+  return {TokenType::Identifier, word, token_location};
 }
 
 Token Lexer::next_token() {
   while (index < data.size() && std::isspace(current())) advance();
 
   if (index >= data.size() || current() == '\0') {
-    return {TokenType::EndOfFile, "", current_location};
+    return {TokenType::EndOfFile, "", token_location};
   }
+
+  token_location = current_location;
 
   if (is_symbol_char(current())) return parse_symbol();
   if (std::isdigit(current())) return parse_number();
   if (is_identifier_char(current())) return parse_identifier();
 
+  current_location = token_location;
   advance();
-  return {TokenType::EndOfFile, "", current_location};
+  return {TokenType::EndOfFile, "", token_location};
 }
 
 Token Lexer::parse_symbol() {
   if (current() == '(') {
     advance();
-    return {TokenType::LParen, "(", current_location};
+    return {TokenType::LParen, "(", token_location};
   }
   if (current() == ')') {
     advance();
-    return {TokenType::RParen, ")", current_location};
+    return {TokenType::RParen, ")", token_location};
   }
 
   size_t start = index;
@@ -85,7 +88,7 @@ Token Lexer::parse_symbol() {
   auto word = data.substr(start, index - start);
 
   auto it = symbols.find(word);
-  if (it != symbols.end()) return {it->second, word, current_location};
+  if (it != symbols.end()) return {it->second, word, token_location};
 
   throw std::runtime_error(std::format("Error: Unknown token: {}", word));
 }
