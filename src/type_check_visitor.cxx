@@ -88,7 +88,7 @@ void TypeCheckVisitor::visit(VariableAssignmentStatement& stmt) {
 }
 
 // no-op
-void TypeCheckVisitor::visit(ShowStatement& stmt) { (void)stmt; }
+void TypeCheckVisitor::visit(ShowStatement& stmt) { stmt.expr->accept(*this); }
 
 void TypeCheckVisitor::visit(FunctionDeclaration& func) {
   // scope variable type map to function

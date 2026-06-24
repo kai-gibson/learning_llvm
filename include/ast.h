@@ -1,9 +1,12 @@
 #ifndef AST_H
 #define AST_H
 
+#include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "lexer.h"
+#include "source_location.h"
+#include "token_type.h"
 
 // forward declaration
 struct Visitor;
@@ -52,11 +55,14 @@ class ASTNode {
   virtual ~ASTNode() = default;
   virtual void accept(Visitor& v) = 0;
 
+  ASTNode(SourceLocation source_location) : source_location(source_location) {}
   std::optional<Type> resolved_type;
+  SourceLocation source_location;
 };
 
 struct FloatLiteralExpression : public ASTNode {
-  FloatLiteralExpression(double value) : value(value) {}
+  FloatLiteralExpression(double value, SourceLocation source_location)
+      : ASTNode(source_location), value(value) {}
   double value;
 
   void accept(Visitor& v) override;
@@ -64,8 +70,11 @@ struct FloatLiteralExpression : public ASTNode {
 
 struct BinaryExpression : public ASTNode {
   BinaryExpression(TokenType op, std::unique_ptr<ASTNode> lhs,
-                   std::unique_ptr<ASTNode> rhs)
-      : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+                   std::unique_ptr<ASTNode> rhs, SourceLocation source_location)
+      : ASTNode(source_location),
+        op(op),
+        lhs(std::move(lhs)),
+        rhs(std::move(rhs)) {}
   TokenType op;
   std::unique_ptr<ASTNode> lhs, rhs;
 
@@ -73,15 +82,19 @@ struct BinaryExpression : public ASTNode {
 };
 
 struct VariableExpression : public ASTNode {
-  VariableExpression(std::string name) : name(std::move(name)) {}
+  VariableExpression(std::string name, SourceLocation source_location)
+      : ASTNode(source_location), name(std::move(name)) {}
 
   std::string name;
   void accept(Visitor& v) override;
 };
 
 struct VariableAssignmentStatement : public ASTNode {
-  VariableAssignmentStatement(std::string name, std::unique_ptr<ASTNode> value)
-      : name(std::move(name)), value(std::move(value)) {}
+  VariableAssignmentStatement(std::string name, std::unique_ptr<ASTNode> value,
+                              SourceLocation source_location)
+      : ASTNode(source_location),
+        name(std::move(name)),
+        value(std::move(value)) {}
 
   std::string name;
   std::unique_ptr<ASTNode> value;
@@ -91,8 +104,10 @@ struct VariableAssignmentStatement : public ASTNode {
 struct VariableDeclarationStatement : public ASTNode {
   VariableDeclarationStatement(
       std::string name, std::unique_ptr<ASTNode> value,
+      SourceLocation source_location,
       std::unique_ptr<ASTNode> type_identifier = nullptr)
-      : name(std::move(name)),
+      : ASTNode(source_location),
+        name(std::move(name)),
         value(std::move(value)),
         type_identifier(std::move(type_identifier)) {}
 
@@ -103,14 +118,16 @@ struct VariableDeclarationStatement : public ASTNode {
 };
 
 struct ShowStatement : public ASTNode {
-  ShowStatement(std::unique_ptr<ASTNode> expr) : expr(std::move(expr)) {}
+  ShowStatement(std::unique_ptr<ASTNode> expr, SourceLocation source_location)
+      : ASTNode(source_location), expr(std::move(expr)) {}
 
   std::unique_ptr<ASTNode> expr;
   void accept(Visitor& v) override;
 };
 
 struct FunctionDeclaration : public ASTNode {
-  FunctionDeclaration(std::string name) : name(std::move(name)) {}
+  FunctionDeclaration(std::string name, SourceLocation source_location)
+      : ASTNode(source_location), name(std::move(name)) {}
 
   std::string name;
   std::vector<std::unique_ptr<ASTNode>> statements;
@@ -119,7 +136,8 @@ struct FunctionDeclaration : public ASTNode {
 };
 
 struct FunctionCallExpression : public ASTNode {
-  FunctionCallExpression(std::string name) : name(std::move(name)) {}
+  FunctionCallExpression(std::string name, SourceLocation source_location)
+      : ASTNode(source_location), name(std::move(name)) {}
 
   std::string name;
 
@@ -127,13 +145,16 @@ struct FunctionCallExpression : public ASTNode {
 };
 
 struct Program : public ASTNode {
+  Program() : ASTNode(SourceLocation{}) {}
   std::vector<std::unique_ptr<ASTNode>> functions;
 
   void accept(Visitor& v) override;
 };
 
 struct ReturnStatement : public ASTNode {
-  ReturnStatement(std::unique_ptr<ASTNode> value) : value(std::move(value)) {}
+  ReturnStatement(std::unique_ptr<ASTNode> value,
+                  SourceLocation source_location)
+      : ASTNode(source_location), value(std::move(value)) {}
 
   std::unique_ptr<ASTNode> value;
 
@@ -141,7 +162,8 @@ struct ReturnStatement : public ASTNode {
 };
 
 struct TypeExpression : public ASTNode {
-  TypeExpression(std::string name) : name(std::move(name)) {}
+  TypeExpression(std::string name, SourceLocation source_location)
+      : ASTNode(source_location), name(std::move(name)) {}
 
   std::string name;
 
@@ -149,7 +171,8 @@ struct TypeExpression : public ASTNode {
 };
 
 struct IntLiteralExpression : public ASTNode {
-  IntLiteralExpression(int32_t value) : value(value) {}
+  IntLiteralExpression(int32_t value, SourceLocation source_location)
+      : ASTNode(source_location), value(value) {}
 
   int32_t value;
   void accept(Visitor& v) override;

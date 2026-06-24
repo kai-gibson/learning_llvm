@@ -19,7 +19,7 @@ Token Lexer::parse_number() {
     while (std::isdigit(current())) advance();
   }
 
-  return {token_type, data.substr(start, index - start)};
+  return {token_type, data.substr(start, index - start), current_location};
 }
 
 bool Lexer::is_identifier_char(char chr) {
@@ -50,16 +50,16 @@ Token Lexer::parse_identifier() {
   auto word = data.substr(start, index - start);
 
   auto it = keywords.find(word);
-  if (it != keywords.end()) return {it->second, word};
+  if (it != keywords.end()) return {it->second, word, current_location};
 
-  return {TokenType::Identifier, word};
+  return {TokenType::Identifier, word, current_location};
 }
 
 Token Lexer::next_token() {
   while (index < data.size() && std::isspace(current())) advance();
 
   if (index >= data.size() || current() == '\0') {
-    return {TokenType::EndOfFile, ""};
+    return {TokenType::EndOfFile, "", current_location};
   }
 
   if (is_symbol_char(current())) return parse_symbol();
@@ -67,17 +67,17 @@ Token Lexer::next_token() {
   if (is_identifier_char(current())) return parse_identifier();
 
   advance();
-  return {TokenType::EndOfFile, ""};
+  return {TokenType::EndOfFile, "", current_location};
 }
 
 Token Lexer::parse_symbol() {
   if (current() == '(') {
     advance();
-    return {TokenType::LParen, "("};
+    return {TokenType::LParen, "(", current_location};
   }
   if (current() == ')') {
     advance();
-    return {TokenType::RParen, ")"};
+    return {TokenType::RParen, ")", current_location};
   }
 
   size_t start = index;
@@ -85,7 +85,7 @@ Token Lexer::parse_symbol() {
   auto word = data.substr(start, index - start);
 
   auto it = symbols.find(word);
-  if (it != symbols.end()) return {it->second, word};
+  if (it != symbols.end()) return {it->second, word, current_location};
 
   throw std::runtime_error(std::format("Error: Unknown token: {}", word));
 }
@@ -102,4 +102,15 @@ Tokens Lexer::tokenise() {
 
   tokens.push_back(token);
   return tokens;
+}
+
+void Lexer::advance() {
+  if (current() == '\n') {
+    current_location.column = 1;
+    current_location.line += 1;
+  } else {
+    current_location.column += 1;
+  }
+
+  index += 1;
 }

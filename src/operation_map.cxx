@@ -1,5 +1,7 @@
 #include "operation_map.h"
 
+#include <format>
+
 std::unique_ptr<TypeOperations> build_type_operations(
     Type type, llvm::IRBuilder<>& builder) {
   switch (type.type_id) {

@@ -139,7 +139,7 @@ void CodegenVisitor::visit(Program& expr) {
 }
 
 void CodegenVisitor::visit(ShowStatement& stmt) {
-  auto* fmt = llvm_builder->CreateGlobalStringPtr("%.2f\n", "fmt");
+  auto* fmt = llvm_builder->CreateGlobalStringPtr("%d\n", "fmt");
 
   auto* printf_fn = llvm_module->getFunction("printf");
 
