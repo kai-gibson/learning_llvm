@@ -1,12 +1,77 @@
 #include "type_check_visitor.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "compile_error.h"
 
+bool is_int_type(TypeId type_id) {
+  using std::ranges::contains;
+
+  constexpr std::array int_types = {
+      TypeId::Int8,  TypeId::Int16,  TypeId::Int32,  TypeId::Int64,
+      TypeId::UInt8, TypeId::UInt16, TypeId::UInt32, TypeId::UInt64};
+
+  return contains(int_types, type_id);
+}
+
+bool is_float_type(TypeId type_id) {
+  using std::ranges::contains;
+
+  constexpr std::array float_types = {TypeId::Float32, TypeId::Float64};
+
+  return contains(float_types, type_id);
+}
+
+Type resolve_literal_type(std::optional<Type> explicit_type, Type& literal,
+                          SourceLocation& source_location) {
+  if (literal.type_id == TypeId::IntLiteral) {
+    if (!explicit_type)
+      return Type{.type_id = TypeId::Int32, .identifier = "Int32"};
+
+    if (!is_int_type(explicit_type->type_id)) {
+      throw TypeError(source_location, "Can't coerce int literal to type: {}",
+                      explicit_type->identifier);
+    }
+
+    return *explicit_type;
+  }
+
+  if (literal.type_id == TypeId::FloatLiteral) {
+    if (!explicit_type)
+      return Type{.type_id = TypeId::Float64, .identifier = "Float64"};
+
+    if (!is_float_type(explicit_type->type_id)) {
+      throw TypeError(source_location, "Can't coerce float literal to type: {}",
+                      explicit_type->identifier);
+    }
+
+    return *explicit_type;
+  }
+
+  throw std::runtime_error("Shouldn't have reached here.");
+}
+
 void TypeCheckVisitor::visit(BinaryExpression& expr) {
   auto lhs = emit(*expr.lhs);
   auto rhs = emit(*expr.rhs);
+
+  bool lhs_literal =
+      lhs.type_id == TypeId::IntLiteral || lhs.type_id == TypeId::FloatLiteral;
+  bool rhs_literal =
+      rhs.type_id == TypeId::IntLiteral || rhs.type_id == TypeId::FloatLiteral;
+
+  // one is a literal, one is concrete — resolve the literal against the
+  // concrete
+  if (lhs_literal != rhs_literal) {
+    if (lhs_literal) {
+      lhs = resolve_literal_type(rhs, lhs, expr.source_location);
+      expr.lhs->resolved_type = lhs;
+    } else {
+      rhs = resolve_literal_type(lhs, rhs, expr.source_location);
+      expr.rhs->resolved_type = rhs;
+    }
+  }
 
   std::cout << (int)lhs.type_id << " " << (int)rhs.type_id << "\n";
   if (lhs.type_id != rhs.type_id) {
@@ -22,12 +87,12 @@ void TypeCheckVisitor::visit(BinaryExpression& expr) {
 }
 
 void TypeCheckVisitor::visit(FloatLiteralExpression& expr) {
-  result = Type{.type_id = TypeId::Float64, .identifier = "Float64"};
+  result = Type{.type_id = TypeId::FloatLiteral, .identifier = ""};
   expr.resolved_type = result;
 }
 
 void TypeCheckVisitor::visit(IntLiteralExpression& expr) {
-  result = Type{.type_id = TypeId::Int32, .identifier = "Int32"};
+  result = Type{.type_id = TypeId::IntLiteral, .identifier = ""};
   expr.resolved_type = result;
 }
 
@@ -57,6 +122,12 @@ void TypeCheckVisitor::visit(VariableDeclarationStatement& stmt) {
 
   auto value = emit(*stmt.value);
 
+  if (value.type_id == TypeId::IntLiteral ||
+      value.type_id == TypeId::FloatLiteral) {
+    value = resolve_literal_type(expected_type, value, stmt.source_location);
+    stmt.value->resolved_type = value;
+  }
+
   if (expected_type && expected_type->type_id != value.type_id) {
     throw TypeError(stmt.source_location,
                     "Type Error: variable: {} with type: {} does not match "
@@ -82,6 +153,12 @@ void TypeCheckVisitor::visit(VariableAssignmentStatement& stmt) {
   auto var_type = it->second;
   auto expr_type = emit(*stmt.value);
 
+  if (expr_type.type_id == TypeId::IntLiteral ||
+      expr_type.type_id == TypeId::FloatLiteral) {
+    expr_type = resolve_literal_type(var_type, expr_type, stmt.source_location);
+    stmt.value->resolved_type = expr_type;
+  }
+
   if (var_type.type_id != expr_type.type_id) {
     throw TypeError(stmt.source_location,
                     "Type Error: cannot assign type \"{}\" to variable \"{}\" "
@@ -98,6 +175,11 @@ void TypeCheckVisitor::visit(FunctionDeclaration& func) {
   variable_map.clear();
   for (const auto& stmt : func.statements) {
     stmt->accept(*this);
+    if (result.type_id == TypeId::IntLiteral ||
+        result.type_id == TypeId::FloatLiteral) {
+      throw TypeError(func.source_location,
+                      "Could not infer type of literal, add a type annotation");
+    }
   }
 }
 

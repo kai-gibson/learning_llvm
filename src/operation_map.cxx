@@ -21,6 +21,11 @@ std::unique_ptr<TypeOperations> build_type_operations(
     case TypeId::Float64:
       return std::make_unique<FloatOperations>(builder);
 
+    case TypeId::IntLiteral:
+    case TypeId::FloatLiteral:
+      throw std::runtime_error(
+          "Literal types should not exist by codegen time.");
+
     case TypeId::Bool:
     case TypeId::String:
     case TypeId::UserDefined:

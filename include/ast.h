@@ -24,6 +24,8 @@ enum class TypeId : uint8_t {
   Float32,
   Float64,
   String,
+  IntLiteral,    // temporary type
+  FloatLiteral,  // temporary type
   UserDefined,
 };
 
@@ -44,6 +46,24 @@ const std::unordered_map<std::string, TypeId> builtin_types = {
 };
 
 TypeId get_type_id(const std::string& s);
+
+const std::unordered_map<TypeId, std::string> type_id_str_map = {
+    {TypeId::Bool, "Bool"},
+    {TypeId::Int8, "Int8"},
+    {TypeId::Int16, "Int16"},
+    {TypeId::Int32, "Int32"},
+    {TypeId::Int64, "Int64"},
+    {TypeId::UInt8, "UInt8"},
+    {TypeId::UInt16, "UInt16"},
+    {TypeId::UInt32, "UInt32"},
+    {TypeId::UInt64, "UInt64"},
+    {TypeId::Float32, "Float32"},
+    {TypeId::Float64, "Float64"},
+    {TypeId::String, "String"},
+    {TypeId::UserDefined, "UserDefined"},
+};
+
+std::string type_id_to_str(TypeId type_id);
 
 struct Type {
   TypeId type_id;

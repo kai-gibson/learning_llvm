@@ -8,6 +8,7 @@ func main()
 
   set x = x + 20
   
+  tinyint: Int16 = 12
   my_var: Int32 = 10
   set my_var = my_var + 2
 

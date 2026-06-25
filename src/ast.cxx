@@ -21,3 +21,10 @@ TypeId get_type_id(const std::string& s) {
 
   return TypeId::UserDefined;
 }
+
+std::string type_id_to_str(TypeId type_id) {
+  auto it = type_id_str_map.find(type_id);
+  if (it != type_id_str_map.end()) return it->second;
+
+  throw std::runtime_error("Unknown type id in map");
+}

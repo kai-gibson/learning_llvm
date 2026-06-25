@@ -49,6 +49,10 @@ llvm::Type* CodegenVisitor::get_llvm_type(Type& type) {
     case TypeId::UserDefined:
       throw std::runtime_error(
           std::format("Datatype {} not implemented", type.identifier));
+    case TypeId::IntLiteral:
+    case TypeId::FloatLiteral:
+      throw std::runtime_error(std::format(
+          "Datatype {} should not survive until codegen", type.identifier));
   }
 }
 
@@ -114,8 +118,30 @@ void CodegenVisitor::visit(FloatLiteralExpression& expr) {
 }
 
 void CodegenVisitor::visit(IntLiteralExpression& expr) {
-  result =
-      llvm::ConstantInt::get(*llvm_context, llvm::APInt(32, expr.value, true));
+  int32_t num_bits{};
+  switch (expr.resolved_type->type_id) {
+    case TypeId::Int8:
+    case TypeId::UInt8:
+      num_bits = 8;
+      break;
+    case TypeId::Int16:
+    case TypeId::UInt16:
+      num_bits = 16;
+      break;
+    case TypeId::Int32:
+    case TypeId::UInt32:
+      num_bits = 32;
+      break;
+    case TypeId::Int64:
+    case TypeId::UInt64:
+      num_bits = 64;
+      break;
+    default:
+      throw std::runtime_error(
+          "Got a non integer type inside int literal codegen.");
+  }
+  result = llvm::ConstantInt::get(*llvm_context,
+                                  llvm::APInt(num_bits, expr.value, true));
 }
 
 void CodegenVisitor::visit(VariableExpression& expr) {
@@ -171,9 +197,7 @@ void CodegenVisitor::visit(ReturnStatement& ret) {
   llvm_builder->CreateRet(value);
 }
 
-void CodegenVisitor::visit(TypeExpression& ret) {
-  // noop
-}
+void CodegenVisitor::visit(TypeExpression& ret) { (void)ret; }
 
 void CodegenVisitor::visit(FunctionCallExpression& funccall) {
   auto* fn = llvm_module->getFunction(funccall.name);
