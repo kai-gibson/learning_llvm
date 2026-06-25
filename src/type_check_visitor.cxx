@@ -2,16 +2,19 @@
 
 #include <iostream>
 
+#include "compile_error.h"
+
 void TypeCheckVisitor::visit(BinaryExpression& expr) {
   auto lhs = emit(*expr.lhs);
   auto rhs = emit(*expr.rhs);
 
   std::cout << (int)lhs.type_id << " " << (int)rhs.type_id << "\n";
   if (lhs.type_id != rhs.type_id) {
-    throw std::runtime_error(std::format(
+    throw TypeError(
+        expr.source_location,
         "Type Error: left ({}) and right ({}) of binary operation: {} do not "
         "match",
-        lhs.identifier, rhs.identifier, token_type_to_str(expr.op)));
+        lhs.identifier, rhs.identifier, token_type_to_str(expr.op));
   }
 
   result = Type{.type_id = rhs.type_id, .identifier = rhs.identifier};
@@ -31,8 +34,8 @@ void TypeCheckVisitor::visit(IntLiteralExpression& expr) {
 void TypeCheckVisitor::visit(VariableExpression& expr) {
   auto it = variable_map.find(expr.name);
   if (it == variable_map.end()) {
-    throw std::runtime_error(
-        std::format("Error: variable: {} not declared", expr.name));
+    throw TypeError(expr.source_location, "Error: variable: {} not declared",
+                    expr.name);
   }
 
   result = it->second;
@@ -55,10 +58,10 @@ void TypeCheckVisitor::visit(VariableDeclarationStatement& stmt) {
   auto value = emit(*stmt.value);
 
   if (expected_type && expected_type->type_id != value.type_id) {
-    throw std::runtime_error(
-        std::format("Type Error: variable: {} with type: {} does not match "
+    throw TypeError(stmt.source_location,
+                    "Type Error: variable: {} with type: {} does not match "
                     "expression type: {}",
-                    stmt.name, expected_type->identifier, value.identifier));
+                    stmt.name, expected_type->identifier, value.identifier);
   }
 
   // else just infer type from expression
@@ -72,18 +75,18 @@ void TypeCheckVisitor::visit(VariableDeclarationStatement& stmt) {
 void TypeCheckVisitor::visit(VariableAssignmentStatement& stmt) {
   auto it = variable_map.find(stmt.name);
   if (it == variable_map.end()) {
-    throw std::runtime_error(
-        std::format("Error: variable: {} not declared", stmt.name));
+    throw TypeError(stmt.source_location, "Error: variable: {} not declared",
+                    stmt.name);
   }
 
   auto var_type = it->second;
   auto expr_type = emit(*stmt.value);
 
   if (var_type.type_id != expr_type.type_id) {
-    throw std::runtime_error(
-        std::format("Type Error: cannot assign type \"{}\" to variable \"{}\" "
+    throw TypeError(stmt.source_location,
+                    "Type Error: cannot assign type \"{}\" to variable \"{}\" "
                     "of type \"{}\"",
-                    expr_type.identifier, stmt.name, var_type.identifier));
+                    expr_type.identifier, stmt.name, var_type.identifier);
   }
 }
 

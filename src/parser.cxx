@@ -19,9 +19,9 @@ int32_t precedence(TokenType t) {
 
 const Token& Parser::consume(TokenType expected) {
   if (peek().type != expected) {
-    throw std::runtime_error(std::format("Expected: {}, got: {}",
-                                         token_type_to_str(expected),
-                                         token_type_to_str(peek().type)));
+    throw ParseError(peek().source_location, "Expected: {}, got: {}",
+                     token_type_to_str(expected),
+                     token_type_to_str(peek().type));
   }
 
   auto& token = peek();
@@ -51,7 +51,7 @@ std::unique_ptr<ASTNode> Parser::parse_paren_expression() {
   advance();
   auto expr = parse_expression(0);
   if (peek().type != TokenType::RParen) {
-    throw std::runtime_error("Expected ')'");
+    throw ParseError(peek().source_location, "Expected ')'");
   }
 
   advance();
@@ -85,8 +85,9 @@ std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
     case TokenType::Identifier:
       return parse_identifier_expression();
     default:
-      throw std::runtime_error(std::format("Unexpected primary expression: {}",
-                                           token_type_to_str(peek().type)));
+      throw ParseError(peek().source_location,
+                       "Unexpected primary expression: {}",
+                       token_type_to_str(peek().type));
   }
 }
 
@@ -120,7 +121,6 @@ std::unique_ptr<ASTNode> Parser::parse_type_expression() {
 
   if (!is_builtin_type(name)) {
     throw ParseError(source_location, "Unknown type: {}", name);
-    // throw std::runtime_error(std::format("Unknown type: {}", name));
   }
 
   return std::make_unique<TypeExpression>(name, source_location);
@@ -171,7 +171,8 @@ std::unique_ptr<ASTNode> Parser::parse_statement() {
     case TokenType::Return:
       return parse_return_statement();
     default:
-      throw std::runtime_error("Unexpected statement");
+      throw ParseError(peek().source_location, "Unexpected statement: {}",
+                       token_type_to_str(peek().type));
   }
 };
 
