@@ -2,8 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "code_generation_visitor.h"
-#include "compile_error.h"
+#include "codegen/code_generation_visitor.h"
 #include "file_io.h"
 #include "lexer.h"
 #include "llvm/IR/Module.h"

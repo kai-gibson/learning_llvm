@@ -1,7 +1,7 @@
-#include "code_generation_visitor.h"
+#include "codegen/code_generation_visitor.h"
 
+#include "codegen/operation_map.h"
 #include "compiler.h"
-#include "operation_map.h"
 
 CodegenVisitor::CodegenVisitor() {
   llvm_context = std::make_unique<llvm::LLVMContext>();
