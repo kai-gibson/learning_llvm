@@ -29,6 +29,7 @@ class TypeCheckVisitor : public Visitor {
  private:
   Type result;
   std::unordered_map<std::string, Type> variable_map;
+  FunctionDeclaration* current_function{};
 };
 
 #endif  // TYPE_CHECK_VISITOR_H

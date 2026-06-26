@@ -171,6 +171,12 @@ void TypeCheckVisitor::visit(VariableAssignmentStatement& stmt) {
 void TypeCheckVisitor::visit(ShowStatement& stmt) { stmt.expr->accept(*this); }
 
 void TypeCheckVisitor::visit(FunctionDeclaration& func) {
+  // set current function
+  current_function = &func;
+
+  // resolve function return type to Int32 for now
+  func.resolved_type = Type{.type_id = TypeId::Int32, .identifier = "Int32"};
+
   // scope variable type map to function
   variable_map.clear();
   for (const auto& stmt : func.statements) {
@@ -187,6 +193,14 @@ void TypeCheckVisitor::visit(FunctionCallExpression& stmt) { (void)stmt; }
 
 void TypeCheckVisitor::visit(ReturnStatement& stmt) {
   auto value = emit(*stmt.value);
+
+  if (value.type_id == TypeId::IntLiteral ||
+      value.type_id == TypeId::FloatLiteral) {
+    value = resolve_literal_type(this->current_function->resolved_type, value,
+                                 stmt.source_location);
+    stmt.value->resolved_type = value;
+  }
+
   result = value;
   stmt.resolved_type = result;
 }

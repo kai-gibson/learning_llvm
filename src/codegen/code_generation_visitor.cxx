@@ -205,5 +205,5 @@ void CodegenVisitor::visit(FunctionCallExpression& funccall) {
     throw std::runtime_error(
         std::format("Function {} does not exist", funccall.name));
 
-  llvm_builder->CreateCall(fn->getFunctionType(), fn, {});
+  result = llvm_builder->CreateCall(fn->getFunctionType(), fn, {});
 }
