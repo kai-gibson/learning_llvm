@@ -20,6 +20,10 @@ int main(int argc, char** argv) {
 
   std::string filename;
   app.add_option("<filename>", filename, "Input file")->required();
+
+  bool output_llvm{};
+  app.add_flag("--output-llvm", output_llvm, "Output LLVM IR");
+
   CLI11_PARSE(app, argc, argv);
 
   auto file_data = read_entire_file(filename);
@@ -29,7 +33,6 @@ int main(int argc, char** argv) {
 
   Lexer lexer(FileContents{.name = filename, .data = *file_data});
   auto tokens = lexer.tokenise();
-  // std::cout << "tokens: " << tokens << "\n";
 
   Parser parser(tokens);
 
@@ -45,19 +48,20 @@ int main(int argc, char** argv) {
   top->accept(codegen);
   codegen.finalise();
 
-  auto outfile = std::format("{}.ll", filename);
-  std::ofstream ofs(outfile);
-
   codegen.llvm_module->print(llvm::errs(), nullptr);
 
-  std::error_code EC;
-  llvm::raw_fd_ostream file(outfile, EC, llvm::sys::fs::OF_None);
+  if (output_llvm) {
+    auto outfile = std::format("{}.ll", filename);
+    std::ofstream ofs(outfile);
+    std::error_code EC;
+    llvm::raw_fd_ostream file(outfile, EC, llvm::sys::fs::OF_None);
 
-  if (!EC) {
-    codegen.llvm_module->print(file, nullptr);
-    file.close();
-  } else {
-    llvm::errs() << "Error opening file: " << EC.message() << "\n";
+    if (!EC) {
+      codegen.llvm_module->print(file, nullptr);
+      file.close();
+    } else {
+      llvm::errs() << "Error opening file: " << EC.message() << "\n";
+    }
   }
 
   codegen.compile();
