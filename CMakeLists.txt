@@ -53,7 +53,10 @@ add_executable(learning_llvm
 # Link LLVM libraries
 target_link_libraries(learning_llvm ${llvm_libs})
 
-target_include_directories(learning_llvm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(learning_llvm PRIVATE 
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/external/CLI11/include
+)
 target_include_directories(learning_llvm SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
 
 # Compiler flags

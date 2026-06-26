@@ -177,7 +177,7 @@ void TypeCheckVisitor::visit(FunctionDeclaration& func) {
     stmt->accept(*this);
     if (result.type_id == TypeId::IntLiteral ||
         result.type_id == TypeId::FloatLiteral) {
-      throw TypeError(func.source_location,
+      throw TypeError(stmt->source_location,
                       "Could not infer type of literal, add a type annotation");
     }
   }
