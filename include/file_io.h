@@ -1,6 +1,7 @@
 #ifndef FILE_IO_H
 #define FILE_IO_H
 #include <expected>
+#include <string>
 
 #include "error.h"
 

@@ -1,5 +1,7 @@
 #include "codegen/code_generation_visitor.h"
 
+#include <fstream>
+
 #include "codegen/operation_map.h"
 #include "compiler.h"
 
@@ -56,11 +58,25 @@ llvm::Type* CodegenVisitor::get_llvm_type(Type& type) {
   }
 }
 
-void CodegenVisitor::finalise() {}
-
 void CodegenVisitor::compile() {
   emit_object_file(*llvm_module, "output.o");
   link("output.o", "output");
+}
+
+void CodegenVisitor::output_llvm(const std::string_view filename) {
+  this->llvm_module->print(llvm::errs(), nullptr);
+
+  auto outfile = std::format("{}.ll", filename);
+  std::ofstream ofs(outfile);
+  std::error_code EC;
+  llvm::raw_fd_ostream file(outfile, EC, llvm::sys::fs::OF_None);
+
+  if (!EC) {
+    this->llvm_module->print(file, nullptr);
+    file.close();
+  } else {
+    llvm::errs() << "Error opening file: " << EC.message() << "\n";
+  }
 }
 
 void CodegenVisitor::visit(VariableDeclarationStatement& stmt) {
@@ -186,9 +202,6 @@ void CodegenVisitor::visit(FunctionDeclaration& func_declaration) {
   llvm_builder->SetInsertPoint(entry);
 
   for (auto& statement : func_declaration.statements) result = emit(*statement);
-
-  // llvm_builder->CreateRet(
-  //     llvm::ConstantInt::get(llvm::Type::getInt32Ty(*llvm_context), 0));
 }
 
 void CodegenVisitor::visit(ReturnStatement& ret) {

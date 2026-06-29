@@ -19,7 +19,6 @@
 class CodegenVisitor : public Visitor {
  public:
   CodegenVisitor();
-  void finalise();
   void visit(BinaryExpression& expr) override;
   void visit(FloatLiteralExpression& expr) override;
   void visit(VariableExpression& expr) override;
@@ -35,6 +34,7 @@ class CodegenVisitor : public Visitor {
 
   llvm::Value* emit(ASTNode& expr);
   void compile();
+  void output_llvm(const std::string_view filename);
 
   std::unique_ptr<llvm::LLVMContext> llvm_context;
   std::unique_ptr<llvm::Module> llvm_module;

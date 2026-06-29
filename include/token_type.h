@@ -24,7 +24,6 @@ enum class TokenType : int8_t {
   GreaterThanEquals,
   Equals,
   NotEquals,
-  Not,
 
   // Keywords
   Set,
@@ -32,35 +31,16 @@ enum class TokenType : int8_t {
   Function,
   End,
   Return,
+  And,
+  Or,
+  If,
+  Else,
+  Not,
   // EOF
   EndOfFile,
 };
 
-const std::unordered_map<std::string, TokenType> keywords = {
-    {"set", TokenType::Set},       {"show", TokenType::Show},
-    {"func", TokenType::Function}, {"end", TokenType::End},
-    {"return", TokenType::Return},
-};
-
-const std::unordered_map<std::string, TokenType> symbols = {
-    {"+", TokenType::Plus},
-    {"-", TokenType::Minus},
-    {"*", TokenType::Asterisk},
-    {"/", TokenType::ForwardSlash},
-    {"(", TokenType::LParen},
-    {")", TokenType::RParen},
-    {"=", TokenType::Assignment},
-    {":", TokenType::Colon},
-    {"<", TokenType::LessThan},
-    {">", TokenType::GreaterThan},
-    {"<=", TokenType::LessThanEquals},
-    {">=", TokenType::GreaterThanEquals},
-    {"==", TokenType::Equals},
-    {"!=", TokenType::NotEquals},
-    {"!", TokenType::Not},
-};
-
-constexpr std::array<const char*, 25> TOKEN_TYPE_STR = {
+constexpr auto TOKEN_TYPE_STR = std::to_array({
     "Plus",
     "Minus",
     "Asterisk",
@@ -79,13 +59,42 @@ constexpr std::array<const char*, 25> TOKEN_TYPE_STR = {
     "GreaterThanEquals",
     "Equals",
     "NotEquals",
-    "Not",
     "Set",
     "Show",
     "Function",
     "End",
     "Return",
+    "And",
+    "Or",
+    "If",
+    "Else",
+    "Not",
     "EndOfFile",
+});
+
+const std::unordered_map<std::string, TokenType> keywords = {
+    {"set", TokenType::Set},       {"show", TokenType::Show},
+    {"func", TokenType::Function}, {"end", TokenType::End},
+    {"return", TokenType::Return}, {"and", TokenType::And},
+    {"or", TokenType::Or},         {"if", TokenType::If},
+    {"else", TokenType::Else},     {"not", TokenType::Not},
+};
+
+const std::unordered_map<std::string, TokenType> symbols = {
+    {"+", TokenType::Plus},
+    {"-", TokenType::Minus},
+    {"*", TokenType::Asterisk},
+    {"/", TokenType::ForwardSlash},
+    {"(", TokenType::LParen},
+    {")", TokenType::RParen},
+    {"=", TokenType::Assignment},
+    {":", TokenType::Colon},
+    {"<", TokenType::LessThan},
+    {">", TokenType::GreaterThan},
+    {"<=", TokenType::LessThanEquals},
+    {">=", TokenType::GreaterThanEquals},
+    {"==", TokenType::Equals},
+    {"!=", TokenType::NotEquals},
 };
 
 inline const char* token_type_to_str(TokenType t) {

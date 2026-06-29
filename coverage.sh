@@ -1,29 +1,15 @@
 #!/bin/sh
+set -e
 
-set -euo pipefail
-BUILD_DIR="build"
-PROFILE_FILE="$BUILD_DIR/tests/default.profraw"
-PROFILE_DATA="$BUILD_DIR/tests/default.profdata"
-HTML_DIR="$BUILD_DIR/coverage-html"
+# Run tests and output raw profile directly to build folder
+LLVM_PROFILE_FILE="build/code-%p.profraw" ./build/tests/run_tests
 
-echo $PROFILE_FILE
+# Merge coverage data
+llvm-profdata merge -sparse build/*.profraw -o build/coverage.profdata
 
-# Run tests with LLVM profiling enabled
-ctest --test-dir "$BUILD_DIR" --output-on-failure
+# Generate HTML report (filtered to src/ and include/)
+llvm-cov show ./build/tests/run_tests -instr-profile=build/coverage.profdata -format=html -output-dir=build/coverage_report src/ include/
 
-# Merge raw profile data
-llvm-profdata merge -sparse "$PROFILE_FILE" -o "$PROFILE_DATA"
+# Show summary in terminal (filtered to src/ and include/)
+llvm-cov report ./build/tests/run_tests -instr-profile=build/coverage.profdata src/ include/
 
-# Generate console report, ignoring system headers and gtest
-llvm-cov report "$BUILD_DIR/tests/void_compiler_tests" \
-    -instr-profile="$PROFILE_DATA" \
-    -ignore-filename-regex='/usr|googletest|test'
-
-# Generate HTML report, ignoring system headers and gtest
-llvm-cov show "$BUILD_DIR/tests/void_compiler_tests" \
-    -instr-profile="$PROFILE_DATA" \
-    -ignore-filename-regex='/usr|googletest|test' \
-    -show-line-counts-or-regions \
-    -format=html -o "$HTML_DIR"
-
-echo "Coverage report generated: $HTML_DIR/index.html"
