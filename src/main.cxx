@@ -1,6 +1,7 @@
 #include <CLI/CLI.hpp>
 
 #include "frontend.h"
+#include "token_type.h"
 
 int main(int argc, char** argv) {
   CLI::App app{"B2 compiler"};

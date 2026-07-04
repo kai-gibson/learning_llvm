@@ -10,6 +10,10 @@
 #include "source_location.h"
 #include "token_type.h"
 
+// free pure functions
+bool is_identifier_char(char chr);
+bool is_symbol_char(char chr);
+
 struct Token {
   TokenType type;
   std::string value;
@@ -63,8 +67,6 @@ class Lexer {
   Token parse_identifier();
   Token parse_symbol();
   Token next_token();
-  bool is_identifier_char(char chr);
-  bool is_symbol_char(char chr);
 };
 
 #endif  // LEXER_H

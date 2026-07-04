@@ -2,6 +2,31 @@
 
 #include <cctype>
 
+// free pure functions
+bool is_identifier_char(char chr) {
+  return std::isalnum(chr) || chr == '_' || chr == '-';
+}
+
+bool is_symbol_char(char chr) {
+  switch (chr) {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '(':
+    case ')':
+    case '=':
+    case ':':
+    case '<':
+    case '>':
+    case '{':
+    case '}':
+      return true;
+    default:
+      return false;
+  }
+}
+
 char Lexer::current() { return index < data.size() ? data[index] : '\0'; }
 
 char Lexer::peek() { return index + 1 < data.size() ? data[index + 1] : '\0'; }
@@ -20,28 +45,6 @@ Token Lexer::parse_number() {
   }
 
   return {token_type, data.substr(start, index - start), token_location};
-}
-
-bool Lexer::is_identifier_char(char chr) {
-  return std::isalnum(chr) || chr == '_' || chr == '-';
-}
-
-bool Lexer::is_symbol_char(char chr) {
-  switch (chr) {
-    case '+':
-    case '-':
-    case '*':
-    case '/':
-    case '(':
-    case ')':
-    case '=':
-    case ':':
-    case '<':
-    case '>':
-      return true;
-    default:
-      return false;
-  }
 }
 
 Token Lexer::parse_identifier() {

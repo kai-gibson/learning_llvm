@@ -13,6 +13,15 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(run_tests 
   lexer_test.cxx
+  utils_test.cxx
+)
+
+target_include_directories(run_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+
+target_include_directories(run_tests PRIVATE 
+  ../include/
+  include/codegen/
 )
 
 # test executable links against .o from parent
