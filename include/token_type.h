@@ -1,9 +1,9 @@
 #ifndef TOKEN_TYPE_H
 #define TOKEN_TYPE_H
 
-#include <array>
-#include <string>
-#include <unordered_map>
+#include <string_view>
+
+#include "utils/container.h"
 
 enum class TokenType : int8_t {
   Plus,
@@ -40,47 +40,52 @@ enum class TokenType : int8_t {
   EndOfFile,
 };
 
-constexpr auto TOKEN_TYPE_STR = std::to_array({
-    "Plus",
-    "Minus",
-    "Asterisk",
-    "ForwardSlash",
-    "FloatLiteral",
-    "IntLiteral",
-    "StringLiteral",
-    "Identifier",
-    "LParen",
-    "RParen",
-    "Assignment",
-    "Colon",
-    "LessThan",
-    "GreaterThan",
-    "LessThanEquals",
-    "GreaterThanEquals",
-    "Equals",
-    "NotEquals",
-    "Set",
-    "Show",
-    "Function",
-    "End",
-    "Return",
-    "And",
-    "Or",
-    "If",
-    "Else",
-    "Not",
-    "EndOfFile",
+constexpr auto TOKEN_TYPE_STR = to_static_map<TokenType, std::string_view>({
+    {TokenType::Plus, "Plus"},
+    {TokenType::Minus, "Minus"},
+    {TokenType::Asterisk, "Asterisk"},
+    {TokenType::ForwardSlash, "ForwardSlash"},
+    {TokenType::FloatLiteral, "FloatLiteral"},
+    {TokenType::IntLiteral, "IntLiteral"},
+    {TokenType::StringLiteral, "StringLiteral"},
+    {TokenType::Identifier, "Identifier"},
+    {TokenType::LParen, "LParen"},
+    {TokenType::RParen, "RParen"},
+    {TokenType::Assignment, "Assignment"},
+    {TokenType::Colon, "Colon"},
+    {TokenType::LessThan, "LessThan"},
+    {TokenType::GreaterThan, "GreaterThan"},
+    {TokenType::LessThanEquals, "LessThanEquals"},
+    {TokenType::GreaterThanEquals, "GreaterThanEquals"},
+    {TokenType::Equals, "Equals"},
+    {TokenType::NotEquals, "NotEquals"},
+    {TokenType::Set, "Set"},
+    {TokenType::Show, "Show"},
+    {TokenType::Function, "Function"},
+    {TokenType::End, "End"},
+    {TokenType::Return, "Return"},
+    {TokenType::And, "And"},
+    {TokenType::Or, "Or"},
+    {TokenType::If, "If"},
+    {TokenType::Else, "Else"},
+    {TokenType::Not, "Not"},
+    {TokenType::EndOfFile, "EndOfFile"},
 });
 
-const std::unordered_map<std::string, TokenType> keywords = {
-    {"set", TokenType::Set},       {"show", TokenType::Show},
-    {"func", TokenType::Function}, {"end", TokenType::End},
-    {"return", TokenType::Return}, {"and", TokenType::And},
-    {"or", TokenType::Or},         {"if", TokenType::If},
-    {"else", TokenType::Else},     {"not", TokenType::Not},
-};
+constexpr auto KEYWORDS = to_static_map<std::string_view, TokenType>({
+    {"set", TokenType::Set},
+    {"show", TokenType::Show},
+    {"func", TokenType::Function},
+    {"end", TokenType::End},
+    {"return", TokenType::Return},
+    {"and", TokenType::And},
+    {"or", TokenType::Or},
+    {"if", TokenType::If},
+    {"else", TokenType::Else},
+    {"not", TokenType::Not},
+});
 
-const std::unordered_map<std::string, TokenType> symbols = {
+constexpr auto SYMBOLS = to_static_map<std::string_view, TokenType>({
     {"+", TokenType::Plus},
     {"-", TokenType::Minus},
     {"*", TokenType::Asterisk},
@@ -95,12 +100,10 @@ const std::unordered_map<std::string, TokenType> symbols = {
     {">=", TokenType::GreaterThanEquals},
     {"==", TokenType::Equals},
     {"!=", TokenType::NotEquals},
-};
+});
 
-inline const char* token_type_to_str(TokenType t) {
-  auto index = static_cast<size_t>(t);
-  if (index >= TOKEN_TYPE_STR.size()) return "Unknown";
-  return TOKEN_TYPE_STR[index];
+constexpr const std::string_view token_type_to_str(TokenType t) {
+  return TOKEN_TYPE_STR.find(t)->get();
 }
 
 #endif  // TOKEN_TYPE_H

@@ -52,8 +52,9 @@ Token Lexer::parse_identifier() {
   while (is_identifier_char(current())) advance();
   auto word = data.substr(start, index - start);
 
-  auto it = keywords.find(word);
-  if (it != keywords.end()) return {it->second, word, token_location};
+  if (auto found = KEYWORDS.find(word); found) {
+    return {*found, word, token_location};
+  }
 
   return {TokenType::Identifier, word, token_location};
 }
@@ -90,8 +91,9 @@ Token Lexer::parse_symbol() {
   while (is_symbol_char(current())) advance();
   auto word = data.substr(start, index - start);
 
-  auto it = symbols.find(word);
-  if (it != symbols.end()) return {it->second, word, token_location};
+  if (auto found = SYMBOLS.find(word); found.has_value()) {
+    return {*found, word, token_location};
+  }
 
   throw std::runtime_error(std::format("Error: Unknown token: {}", word));
 }
