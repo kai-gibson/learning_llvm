@@ -4,7 +4,7 @@
 
 #include "compile_error.h"
 
-int32_t precedence(TokenType t) {
+auto precedence(TokenType t) -> int32_t {
   switch (t) {
     case TokenType::Plus:
     case TokenType::Minus:
@@ -17,7 +17,7 @@ int32_t precedence(TokenType t) {
   }
 }
 
-const Token& Parser::consume(TokenType expected) {
+auto Parser::consume(TokenType expected) -> const Token& {
   if (peek().type != expected) {
     throw ParseError(peek().source_location, "Expected: {}, got: {}",
                      token_type_to_str(expected),
@@ -29,14 +29,14 @@ const Token& Parser::consume(TokenType expected) {
   return token;
 }
 
-const Token& Parser::peek() {
+auto Parser::peek() -> const Token& {
   // return EOF token instead of OOB
   return (index < tokens.size()) ? tokens[index] : tokens.back();
 }
 
 void Parser::advance() { index += 1; }
 
-std::unique_ptr<ASTNode> Parser::parse_float_expression() {
+auto Parser::parse_float_expression() -> std::unique_ptr<ASTNode> {
   auto token = peek();
   std::clog << "converting: " << token.value << " to double...\n";
   auto value = std::stod(token.value);
@@ -47,7 +47,7 @@ std::unique_ptr<ASTNode> Parser::parse_float_expression() {
   return std::move(result);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_paren_expression() {
+auto Parser::parse_paren_expression() -> std::unique_ptr<ASTNode> {
   advance();
   auto expr = parse_expression(0);
   if (peek().type != TokenType::RParen) {
@@ -58,7 +58,7 @@ std::unique_ptr<ASTNode> Parser::parse_paren_expression() {
   return expr;
 }
 
-std::unique_ptr<ASTNode> Parser::parse_identifier_expression() {
+auto Parser::parse_identifier_expression() -> std::unique_ptr<ASTNode> {
   std::string name = peek().value;
   advance();
 
@@ -74,7 +74,7 @@ std::unique_ptr<ASTNode> Parser::parse_identifier_expression() {
   return std::make_unique<VariableExpression>(name, peek().source_location);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
+auto Parser::parse_primary_expression() -> std::unique_ptr<ASTNode> {
   switch (peek().type) {
     case TokenType::FloatLiteral:
       return parse_float_expression();
@@ -91,7 +91,7 @@ std::unique_ptr<ASTNode> Parser::parse_primary_expression() {
   }
 }
 
-std::unique_ptr<ASTNode> Parser::parse_int_expression() {
+auto Parser::parse_int_expression() -> std::unique_ptr<ASTNode> {
   auto token = peek();
   std::clog << "converting: " << token.value << " to Int32...\n";
   auto value = std::stoi(token.value);
@@ -102,7 +102,7 @@ std::unique_ptr<ASTNode> Parser::parse_int_expression() {
   return std::move(result);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {
+auto Parser::parse_expression(int32_t min_precedence) -> std::unique_ptr<ASTNode> {
   auto lhs = parse_primary_expression();
 
   while (precedence(peek().type) > min_precedence) {
@@ -116,7 +116,7 @@ std::unique_ptr<ASTNode> Parser::parse_expression(int32_t min_precedence) {
   return lhs;
 }
 
-std::unique_ptr<ASTNode> Parser::parse_type_expression() {
+auto Parser::parse_type_expression() -> std::unique_ptr<ASTNode> {
   auto [_, name, source_location] = consume(TokenType::Identifier);
 
   if (!is_builtin_type(name)) {
@@ -126,7 +126,7 @@ std::unique_ptr<ASTNode> Parser::parse_type_expression() {
   return std::make_unique<TypeExpression>(name, source_location);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_variable_declaration() {
+auto Parser::parse_variable_declaration() -> std::unique_ptr<ASTNode> {
   auto name = peek();
   advance();
 
@@ -144,7 +144,7 @@ std::unique_ptr<ASTNode> Parser::parse_variable_declaration() {
       std::move(type_identifier));
 };
 
-std::unique_ptr<ASTNode> Parser::parse_variable_assignment() {
+auto Parser::parse_variable_assignment() -> std::unique_ptr<ASTNode> {
   auto set = consume(TokenType::Set);
   auto [_, name, _a] = consume(TokenType::Identifier);
   consume(TokenType::Assignment);
@@ -153,14 +153,14 @@ std::unique_ptr<ASTNode> Parser::parse_variable_assignment() {
       name, parse_expression(0), set.source_location);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_show_statement() {
+auto Parser::parse_show_statement() -> std::unique_ptr<ASTNode> {
   auto show = consume(TokenType::Show);
 
   return std::make_unique<ShowStatement>(parse_expression(0),
                                          show.source_location);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_statement() {
+auto Parser::parse_statement() -> std::unique_ptr<ASTNode> {
   switch (peek().type) {
     case TokenType::Identifier:
       return parse_variable_declaration();
@@ -176,7 +176,7 @@ std::unique_ptr<ASTNode> Parser::parse_statement() {
   }
 };
 
-std::unique_ptr<ASTNode> Parser::parse_function_declaration() {
+auto Parser::parse_function_declaration() -> std::unique_ptr<ASTNode> {
   consume(TokenType::Function);
   auto [_, name, source_location] = consume(TokenType::Identifier);
 
@@ -194,7 +194,7 @@ std::unique_ptr<ASTNode> Parser::parse_function_declaration() {
   return std::move(func);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_top_level() {
+auto Parser::parse_top_level() -> std::unique_ptr<ASTNode> {
   auto program = std::make_unique<Program>();
 
   while (peek().type != TokenType::EndOfFile) {
@@ -204,7 +204,7 @@ std::unique_ptr<ASTNode> Parser::parse_top_level() {
   return std::move(program);
 }
 
-std::unique_ptr<ASTNode> Parser::parse_return_statement() {
+auto Parser::parse_return_statement() -> std::unique_ptr<ASTNode> {
   auto ret = consume(TokenType::Return);
 
   return std::make_unique<ReturnStatement>(parse_expression(0),

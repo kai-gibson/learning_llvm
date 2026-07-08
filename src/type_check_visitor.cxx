@@ -5,7 +5,7 @@
 
 #include "compile_error.h"
 
-bool is_int_type(TypeId type_id) {
+auto is_int_type(TypeId type_id) -> bool {
   using std::ranges::contains;
 
   constexpr std::array int_types = {
@@ -15,7 +15,7 @@ bool is_int_type(TypeId type_id) {
   return contains(int_types, type_id);
 }
 
-bool is_float_type(TypeId type_id) {
+auto is_float_type(TypeId type_id) -> bool {
   using std::ranges::contains;
 
   constexpr std::array float_types = {TypeId::Float32, TypeId::Float64};
@@ -23,8 +23,8 @@ bool is_float_type(TypeId type_id) {
   return contains(float_types, type_id);
 }
 
-Type resolve_literal_type(std::optional<Type> explicit_type, Type& literal,
-                          SourceLocation& source_location) {
+auto resolve_literal_type(std::optional<Type> explicit_type, Type& literal,
+                          SourceLocation& source_location) -> Type {
   if (literal.type_id == TypeId::IntLiteral) {
     if (!explicit_type)
       return Type{.type_id = TypeId::Int32, .identifier = "Int32"};

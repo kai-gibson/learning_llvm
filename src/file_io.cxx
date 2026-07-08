@@ -8,8 +8,8 @@
    Free wrapper functions around C++ IO
 */
 
-std::expected<std::string, ReadFileError> read_entire_file(
-    const std::string& filename) noexcept {
+auto read_entire_file(
+    const std::string& filename) noexcept -> std::expected<std::string, ReadFileError> {
   try {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) {

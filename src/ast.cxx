@@ -15,14 +15,14 @@ inline void ReturnStatement::accept(Visitor& v) { v.visit(*this); }
 inline void TypeExpression::accept(Visitor& v) { v.visit(*this); }
 inline void IntLiteralExpression::accept(Visitor& v) { v.visit(*this); }
 
-TypeId get_type_id(const std::string& s) {
+auto get_type_id(const std::string& s) -> TypeId {
   auto it = builtin_types.find(s);
   if (it != builtin_types.end()) return it->second;
 
   return TypeId::UserDefined;
 }
 
-std::string type_id_to_str(TypeId type_id) {
+auto type_id_to_str(TypeId type_id) -> std::string {
   auto it = type_id_str_map.find(type_id);
   if (it != type_id_str_map.end()) return it->second;
 
