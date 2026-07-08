@@ -5,6 +5,7 @@
 #include <cctype>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "source_location.h"
@@ -51,22 +52,24 @@ class Lexer {
     current_location.filename = file_contents.name;
   }
 
-  Tokens tokenise();
+  auto tokenise() -> Tokens;
 
- private:
+ protected:
   SourceLocation token_location;
   SourceLocation current_location;
   const std::string& data;
   size_t index{};
 
   void advance();
-  char current();
-  char peek();
+  auto current() -> char;
+  auto peek() -> char;
 
-  Token parse_number();
-  Token parse_identifier();
-  Token parse_symbol();
-  Token next_token();
+  auto parse_number() -> Token;
+  auto parse_string_literal() -> Token;
+  auto parse_identifier() -> Token;
+  auto parse_symbol() -> Token;
+  auto next_token() -> Token;
+  void consume(char expected, const std::string_view error_message);
 };
 
 #endif  // LEXER_H
