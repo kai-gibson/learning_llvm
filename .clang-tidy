@@ -6,5 +6,6 @@ Checks: >
   -fuchsia-*,
   -llvm-*,
   -modernize-use-trailing-return-type
+  -bugprone-easily-swappable-parameters
 WarningsAsErrors: '*'
 

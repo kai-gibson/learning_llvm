@@ -1,9 +1,12 @@
+
 #include "lexer.h"
 
 #include <gtest/gtest.h>
 
 #include <algorithm>
 #include <ostream>
+
+#include "compile_error.h"
 
 inline void PrintTo(const TokenType& type, std::ostream* os) {
   *os << token_type_to_str(type);
@@ -80,6 +83,10 @@ TEST(LexerEdgeCases, SkipsInvalidUnicodeTest) {
   auto tokens = lex_string("\u0444");
   EXPECT_EQ(tokens.size(), 1);
   EXPECT_EQ(tokens.at(0).type, TokenType::EndOfFile);
+}
+
+TEST(LexerEdgeCases, ThrowsLexerErrorOnUnterminatedStringLiteral) {
+  ASSERT_THROW(({ auto _ = lex_string("\"Unterminated..."); }), LexerError);
 }
 
 struct LexerData {
