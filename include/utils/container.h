@@ -26,15 +26,15 @@ class StaticMap {
     }
   }
 
-  constexpr std::optional<std::reference_wrapper<const Value>> find(
-      const Key& key) const {
+  [[nodiscard]] constexpr auto find(
+      const Key& key) const -> std::optional<std::reference_wrapper<const Value>> {
     auto it =
         std::ranges::lower_bound(items_, key, {}, &Entry<Key, Value>::key);
     if (it != items_.end() && it->key == key) return std::cref(it->value);
     return std::nullopt;
   }
 
-  constexpr bool contains(const Key& key) const {
+  [[nodiscard]] constexpr auto contains(const Key& key) const -> bool {
     return find(key).has_value();
   }
 
@@ -54,15 +54,15 @@ class StaticSet {
     }
   }
 
-  constexpr std::optional<std::reference_wrapper<const Value>> find(
-      const Value& value) const {
+  constexpr auto find(
+      const Value& value) const -> std::optional<std::reference_wrapper<const Value>> {
     auto it = std::ranges::lower_bound(items_, value);
 
     if (it != items_.end() && *it == value) return std::cref(*it);
     return std::nullopt;
   }
 
-  constexpr bool contains(const Value& key) const {
+  constexpr auto contains(const Value& key) const -> bool {
     return find(key).has_value();
   }
 

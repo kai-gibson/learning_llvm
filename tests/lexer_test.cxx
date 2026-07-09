@@ -86,7 +86,8 @@ TEST(LexerEdgeCases, SkipsInvalidUnicodeTest) {
 }
 
 TEST(LexerEdgeCases, ThrowsLexerErrorOnUnterminatedStringLiteral) {
-  ASSERT_THROW(({ auto _ = lex_string("\"Unterminated..."); }), LexerError);
+  ASSERT_THROW(([] -> void { auto _ = lex_string("\"Unterminated..."); }()),
+               LexerError);
 }
 
 struct LexerData {

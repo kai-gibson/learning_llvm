@@ -12,8 +12,8 @@
 #include "token_type.h"
 
 // free pure functions
-bool is_identifier_char(char chr);
-bool is_symbol_char(char chr);
+auto is_identifier_char(char chr) -> bool;
+auto is_symbol_char(char chr) -> bool;
 
 struct Token {
   TokenType type;
@@ -25,14 +25,14 @@ struct Token {
       : type(type), value(std::move(value)), source_location(source_location) {}
 };
 
-inline std::ostream& operator<<(std::ostream& os, const Token& token) {
+inline auto operator<<(std::ostream& os, const Token& token) -> std::ostream& {
   return os << "Token{ .type=" << token_type_to_str(token.type) << " .value=\""
             << token.value << "\"}";
 }
 
 using Tokens = std::vector<Token>;
 
-inline std::ostream& operator<<(std::ostream& os, const Tokens& tokens) {
+inline auto operator<<(std::ostream& os, const Tokens& tokens) -> std::ostream& {
   os << "[";
   for (size_t i = 0; i < tokens.size(); i++) {
     os << tokens.at(i);

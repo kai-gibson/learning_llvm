@@ -2,8 +2,8 @@
 
 #include <format>
 
-std::unique_ptr<TypeOperations> build_type_operations(
-    Type type, llvm::IRBuilder<>& builder) {
+auto build_type_operations(
+    Type type, llvm::IRBuilder<>& builder) -> std::unique_ptr<TypeOperations> {
   switch (type.type_id) {
     case TypeId::Int8:
     case TypeId::Int16:
@@ -34,8 +34,8 @@ std::unique_ptr<TypeOperations> build_type_operations(
   }
 }
 
-llvm::Value* TypeOperations::apply(TokenType token_type, llvm::Value* lhs,
-                                   llvm::Value* rhs) {
+auto TypeOperations::apply(TokenType token_type, llvm::Value* lhs,
+                                   llvm::Value* rhs) -> llvm::Value* {
   switch (token_type) {
     case TokenType::Plus:
       return add(lhs, rhs);
@@ -59,68 +59,68 @@ llvm::Value* TypeOperations::apply(TokenType token_type, llvm::Value* lhs,
   }
 }
 
-llvm::Value* IntOperations::add(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::add(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateAdd(lhs, rhs, "addtmp");
 }
 
-llvm::Value* IntOperations::subtract(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::subtract(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateSub(lhs, rhs, "subtmp");
 }
 
-llvm::Value* IntOperations::multiply(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::multiply(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateMul(lhs, rhs, "multmp");
 }
 
-llvm::Value* IntOperations::divide(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::divide(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return is_signed ? builder.CreateSDiv(lhs, rhs, "divtmp")
                    : builder.CreateUDiv(lhs, rhs, "divtmp");
 }
 
-llvm::Value* IntOperations::gt(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::gt(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return is_signed ? builder.CreateICmpSGT(lhs, rhs, "gttmp")
                    : builder.CreateICmpUGT(lhs, rhs, "gttmp");
 }
-llvm::Value* IntOperations::lt(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::lt(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return is_signed ? builder.CreateICmpSLT(lhs, rhs, "lttmp")
                    : builder.CreateICmpULT(lhs, rhs, "lttmp");
 }
-llvm::Value* IntOperations::gte(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::gte(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return is_signed ? builder.CreateICmpSGE(lhs, rhs, "gtetmp")
                    : builder.CreateICmpUGE(lhs, rhs, "gtetmp");
 }
-llvm::Value* IntOperations::lte(llvm::Value* lhs, llvm::Value* rhs) {
+auto IntOperations::lte(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return is_signed ? builder.CreateICmpSLE(lhs, rhs, "gtetmp")
                    : builder.CreateICmpULE(lhs, rhs, "gtetmp");
 }
 
-llvm::Value* FloatOperations::add(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::add(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFAdd(lhs, rhs, "faddtmp");
 }
 
-llvm::Value* FloatOperations::subtract(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::subtract(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFSub(lhs, rhs, "fsubtmp");
 }
 
-llvm::Value* FloatOperations::multiply(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::multiply(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFMul(lhs, rhs, "fmultmp");
 }
 
-llvm::Value* FloatOperations::divide(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::divide(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFDiv(lhs, rhs, "fdivtmp");
 }
 
-llvm::Value* FloatOperations::gt(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::gt(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFCmpOGT(lhs, rhs, "fgttmp");
 }
 
-llvm::Value* FloatOperations::lt(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::lt(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFCmpOLT(lhs, rhs, "flttmp");
 }
 
-llvm::Value* FloatOperations::gte(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::gte(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFCmpOGE(lhs, rhs, "fgetmp");
 }
 
-llvm::Value* FloatOperations::lte(llvm::Value* lhs, llvm::Value* rhs) {
+auto FloatOperations::lte(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFCmpOLE(lhs, rhs, "fletmp");
 }

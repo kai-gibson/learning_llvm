@@ -16,7 +16,7 @@ class ParseError : public std::exception {
                         source_location.column);
   }
 
-  [[nodiscard]] const char* what() const noexcept override {
+  [[nodiscard]] auto what() const noexcept -> const char* override {
     return error.c_str();
   }
 
@@ -34,7 +34,7 @@ class TypeError : public std::exception {
                         source_location.column);
   }
 
-  [[nodiscard]] const char* what() const noexcept override {
+  [[nodiscard]] auto what() const noexcept -> const char* override {
     return error.c_str();
   }
 
@@ -52,7 +52,7 @@ class LexerError : public std::exception {
                         source_location.column);
   }
 
-  [[nodiscard]] const char* what() const noexcept override {
+  [[nodiscard]] auto what() const noexcept -> const char* override {
     return error.c_str();
   }
 

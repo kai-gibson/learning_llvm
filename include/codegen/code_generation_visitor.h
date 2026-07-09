@@ -32,7 +32,7 @@ class CodegenVisitor : public Visitor {
   void visit(TypeExpression& stmt) override;
   void visit(IntLiteralExpression& stmt) override;
 
-  llvm::Value* emit(ASTNode& expr);
+  auto emit(ASTNode& expr) -> llvm::Value*;
   void compile();
   void output_llvm(const std::string_view filename);
 
@@ -42,7 +42,7 @@ class CodegenVisitor : public Visitor {
 
   std::unordered_map<std::string, llvm::Value*> named_values;
 
-  llvm::Type* get_llvm_type(Type& type);
+  auto get_llvm_type(Type& type) -> llvm::Type*;
 
  private:
   llvm::Value* result;

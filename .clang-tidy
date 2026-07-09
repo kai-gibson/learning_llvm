@@ -5,7 +5,7 @@ Checks: >
   -clang-analyzer-alpha.*,
   -fuchsia-*,
   -llvm-*,
-  -modernize-use-trailing-return-type
   -bugprone-easily-swappable-parameters
 WarningsAsErrors: '*'
+HeaderFilterRegex: '^.*/learning_llvm/(src|include)/.*\.(h|hpp|cxx|cpp)$'
 

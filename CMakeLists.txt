@@ -4,9 +4,8 @@ if(POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-# silence alignment errros on coverage linking
+# silence alignment errors on coverage linking
 set(CMAKE_OSX_DEPLOYMENT_TARGET "14.7" CACHE STRING "Minimum OS X version" FORCE)
-
 
 project(LearningLLVM VERSION 1.0.0 LANGUAGES CXX C)
 
@@ -15,10 +14,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(ENABLE_COVERAGE "Enable LLVM coverage" OFF)
+
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-
-option(ENABLE_COVERAGE "Enable LLVM coverage" OFF)
 
 separate_arguments(LLVM_DEFINITIONS_LIST UNIX_COMMAND "${LLVM_DEFINITIONS}")
 
@@ -27,18 +26,44 @@ llvm_map_components_to_libnames(llvm_libs
 )
 list(REMOVE_DUPLICATES llvm_libs)
 
-set(COMMON_INCLUDE_DIRS
+# ---------------------------------------------------------------------------
+# Shared project settings, applied to every internal target.
+# Using an INTERFACE library instead of a plain variable means includes,
+# defines, and options propagate consistently and only need to be listed once.
+# ---------------------------------------------------------------------------
+add_library(project_settings INTERFACE)
+
+target_include_directories(project_settings INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(project_settings SYSTEM INTERFACE
+    ${LLVM_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/external/CLI11/include
 )
 
-set(COMMON_COMPILE_OPTIONS
+target_compile_definitions(project_settings INTERFACE
+    ${LLVM_DEFINITIONS_LIST}
+    _LIBCPP_ENABLE_CXX17_REMOVED_FEATURES
+)
+
+target_compile_options(project_settings INTERFACE
     -Wall -Wextra -Wpedantic
     -Wno-deprecated-declarations -Wno-unused-parameter
 )
 
-# Seperate library for testability
+if(ENABLE_COVERAGE)
+    target_compile_options(project_settings INTERFACE
+        -fprofile-instr-generate -fcoverage-mapping
+    )
+    target_link_options(project_settings INTERFACE
+        -fprofile-instr-generate -fcoverage-mapping
+    )
+endif()
 
+# ---------------------------------------------------------------------------
+# Library (separated out for testability)
+# ---------------------------------------------------------------------------
 add_library(learning_llvm_lib OBJECT
     src/frontend.cxx
     src/lexer.cxx
@@ -50,30 +75,20 @@ add_library(learning_llvm_lib OBJECT
     src/codegen/operation_map.cxx
 )
 
-target_include_directories(learning_llvm_lib
-    PRIVATE ${COMMON_INCLUDE_DIRS}
-    SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS}
+target_link_libraries(learning_llvm_lib
+    PUBLIC ${llvm_libs}
+    PRIVATE project_settings
 )
-target_compile_definitions(learning_llvm_lib PRIVATE
-    ${LLVM_DEFINITIONS_LIST}
-    _LIBCPP_ENABLE_CXX17_REMOVED_FEATURES
-)
-target_compile_options(learning_llvm_lib PRIVATE ${COMMON_COMPILE_OPTIONS})
-target_link_libraries(learning_llvm_lib PUBLIC ${llvm_libs})
 
+# ---------------------------------------------------------------------------
 # Final executable
+# ---------------------------------------------------------------------------
 add_executable(learning_llvm src/main.cxx)
-target_include_directories(learning_llvm PRIVATE ${COMMON_INCLUDE_DIRS})
-target_compile_options(learning_llvm PRIVATE ${COMMON_COMPILE_OPTIONS})
-target_link_libraries(learning_llvm PRIVATE learning_llvm_lib)
 
-if(ENABLE_COVERAGE)
-    set(COVERAGE_FLAGS "-fprofile-instr-generate;-fcoverage-mapping")
-    target_compile_options(learning_llvm_lib PRIVATE ${COVERAGE_FLAGS})
-    target_link_options(learning_llvm_lib PRIVATE ${COVERAGE_FLAGS})
-    target_link_options(learning_llvm PRIVATE ${COVERAGE_FLAGS})
-endif()
+target_link_libraries(learning_llvm PRIVATE
+    learning_llvm_lib
+    project_settings
+)
 
 enable_testing()
-
 add_subdirectory(tests)

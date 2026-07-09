@@ -8,7 +8,7 @@
 #include "ast.h"
 #include "lexer.h"
 
-constexpr bool is_builtin_type(std::string_view target) {
+constexpr auto is_builtin_type(std::string_view target) -> bool {
   constexpr std::array builtin_types = {
       "Int8",   "Int16",  "Int32",   "Int64",   "UInt8",  "UInt16",
       "UInt32", "UInt64", "Float32", "Float64", "String", "Bool"};
@@ -21,28 +21,28 @@ constexpr bool is_builtin_type(std::string_view target) {
 class Parser {
  public:
   Parser(const Tokens& tokens) : tokens(tokens) {}
-  std::unique_ptr<ASTNode> parse_top_level();
+  auto parse_top_level() -> std::unique_ptr<ASTNode>;
 
  private:
   void advance();
-  const Token& peek();
-  const Token& consume(TokenType expected);
+  auto peek() -> const Token&;
+  auto consume(TokenType expected) -> const Token&;
 
-  std::unique_ptr<ASTNode> parse_primary_expression();
-  std::unique_ptr<ASTNode> parse_paren_expression();
-  std::unique_ptr<ASTNode> parse_float_expression();
-  std::unique_ptr<ASTNode> parse_identifier_expression();
-  std::unique_ptr<ASTNode> parse_binary_expression(std::unique_ptr<ASTNode> lhs,
-                                                   int32_t min_precedence);
-  std::unique_ptr<ASTNode> parse_expression(int32_t min_precedence);
-  std::unique_ptr<ASTNode> parse_statement();
-  std::unique_ptr<ASTNode> parse_variable_declaration();
-  std::unique_ptr<ASTNode> parse_variable_assignment();
-  std::unique_ptr<ASTNode> parse_show_statement();
-  std::unique_ptr<ASTNode> parse_function_declaration();
-  std::unique_ptr<ASTNode> parse_return_statement();
-  std::unique_ptr<ASTNode> parse_type_expression();
-  std::unique_ptr<ASTNode> parse_int_expression();
+  auto parse_primary_expression() -> std::unique_ptr<ASTNode>;
+  auto parse_paren_expression() -> std::unique_ptr<ASTNode>;
+  auto parse_float_expression() -> std::unique_ptr<ASTNode>;
+  auto parse_identifier_expression() -> std::unique_ptr<ASTNode>;
+  auto parse_binary_expression(std::unique_ptr<ASTNode> lhs,
+                                                   int32_t min_precedence) -> std::unique_ptr<ASTNode>;
+  auto parse_expression(int32_t min_precedence) -> std::unique_ptr<ASTNode>;
+  auto parse_statement() -> std::unique_ptr<ASTNode>;
+  auto parse_variable_declaration() -> std::unique_ptr<ASTNode>;
+  auto parse_variable_assignment() -> std::unique_ptr<ASTNode>;
+  auto parse_show_statement() -> std::unique_ptr<ASTNode>;
+  auto parse_function_declaration() -> std::unique_ptr<ASTNode>;
+  auto parse_return_statement() -> std::unique_ptr<ASTNode>;
+  auto parse_type_expression() -> std::unique_ptr<ASTNode>;
+  auto parse_int_expression() -> std::unique_ptr<ASTNode>;
 
   // vars
   const Tokens& tokens;

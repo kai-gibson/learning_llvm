@@ -102,7 +102,7 @@ constexpr auto SYMBOLS = to_static_map<std::string_view, TokenType>({
     {"!=", TokenType::NotEquals},
 });
 
-constexpr const std::string_view token_type_to_str(TokenType t) {
+constexpr auto token_type_to_str(TokenType t) -> const std::string_view {
   return TOKEN_TYPE_STR.find(t)->get();
 }
 

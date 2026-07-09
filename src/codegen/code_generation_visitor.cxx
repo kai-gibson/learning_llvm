@@ -18,12 +18,12 @@ CodegenVisitor::CodegenVisitor() {
                          *llvm_module);
 }
 
-llvm::Value* CodegenVisitor::emit(ASTNode& expr) {
+auto CodegenVisitor::emit(ASTNode& expr) -> llvm::Value* {
   expr.accept(*this);
   return result;
 }
 
-llvm::Type* CodegenVisitor::get_llvm_type(Type& type) {
+auto CodegenVisitor::get_llvm_type(Type& type) -> llvm::Type* {
   switch (type.type_id) {
     case TypeId::Bool:
       return llvm::Type::getInt1Ty(*llvm_context);

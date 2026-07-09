@@ -9,7 +9,8 @@
 struct PrintVisitor : public Visitor {
   std::size_t indent = 0;
 
-  std::string pad() { return std::string(indent * 2, ' '); }
+  // NOLINTNEXTLINE(modernize-return-braced-init-list)
+  auto pad() -> std::string { return std::string(indent * 2, ' '); }
 
   void print_resolved_type(ASTNode& node) {
     if (node.resolved_type.has_value()) {

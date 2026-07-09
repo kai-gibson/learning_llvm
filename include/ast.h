@@ -45,7 +45,7 @@ const std::unordered_map<std::string, TypeId> builtin_types = {
     {"UserDefined", TypeId::UserDefined},
 };
 
-TypeId get_type_id(const std::string& s);
+auto get_type_id(const std::string& s) -> TypeId;
 
 const std::unordered_map<TypeId, std::string> type_id_str_map = {
     {TypeId::Bool, "Bool"},
@@ -63,7 +63,7 @@ const std::unordered_map<TypeId, std::string> type_id_str_map = {
     {TypeId::UserDefined, "UserDefined"},
 };
 
-std::string type_id_to_str(TypeId type_id);
+auto type_id_to_str(TypeId type_id) -> std::string;
 
 struct Type {
   TypeId type_id;

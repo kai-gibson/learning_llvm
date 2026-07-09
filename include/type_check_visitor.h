@@ -21,7 +21,7 @@ class TypeCheckVisitor : public Visitor {
   void visit(IntLiteralExpression& stmt) override;
 
   // helper function to visit leaf nodes
-  Type emit(ASTNode& node) {
+  auto emit(ASTNode& node) -> Type {
     node.accept(*this);
     return result;
   }
