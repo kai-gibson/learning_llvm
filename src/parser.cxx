@@ -102,7 +102,8 @@ auto Parser::parse_int_expression() -> std::unique_ptr<ASTNode> {
   return std::move(result);
 }
 
-auto Parser::parse_expression(int32_t min_precedence) -> std::unique_ptr<ASTNode> {
+auto Parser::parse_expression(int32_t min_precedence)
+    -> std::unique_ptr<ASTNode> {
   auto lhs = parse_primary_expression();
 
   while (precedence(peek().type) > min_precedence) {

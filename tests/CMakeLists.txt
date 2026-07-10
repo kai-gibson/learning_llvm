@@ -13,6 +13,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(run_tests
   lexer_test.cxx
   utils_test.cxx
+  parser_test.cxx
 )
 
 target_include_directories(run_tests PRIVATE

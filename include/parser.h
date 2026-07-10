@@ -13,10 +13,12 @@ constexpr auto is_builtin_type(std::string_view target) -> bool {
       "Int8",   "Int16",  "Int32",   "Int64",   "UInt8",  "UInt16",
       "UInt32", "UInt64", "Float32", "Float64", "String", "Bool"};
 
-  return std::ranges::any_of(builtin_types, [target](std::string_view item) {
-    return item == target;
-  });
+  return std::ranges::any_of(
+      builtin_types,
+      [target](std::string_view item) -> bool { return item == target; });
 }
+
+auto precedence(TokenType t) -> int32_t;
 
 class Parser {
  public:
@@ -33,7 +35,9 @@ class Parser {
   auto parse_float_expression() -> std::unique_ptr<ASTNode>;
   auto parse_identifier_expression() -> std::unique_ptr<ASTNode>;
   auto parse_binary_expression(std::unique_ptr<ASTNode> lhs,
-                                                   int32_t min_precedence) -> std::unique_ptr<ASTNode>;
+                               int32_t min_precedence)
+      -> std::unique_ptr<ASTNode>;
+
   auto parse_expression(int32_t min_precedence) -> std::unique_ptr<ASTNode>;
   auto parse_statement() -> std::unique_ptr<ASTNode>;
   auto parse_variable_declaration() -> std::unique_ptr<ASTNode>;

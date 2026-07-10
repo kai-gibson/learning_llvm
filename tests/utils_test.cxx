@@ -22,8 +22,8 @@ TEST(StaticMapTest, FindHandlesInvalidValueTest) {
 }
 
 TEST(StaticMapTest, ThrowsOnDuplicateKeyTest) {
-  ASSERT_THROW(([] {
-                 auto _dup = to_static_map<std::string_view, int32_t>(
+  ASSERT_THROW(([] -> void {
+                 auto _ = to_static_map<std::string_view, int32_t>(
                      {{"one", 1}, {"one", 1}});
                }()),
                std::logic_error);
@@ -43,6 +43,6 @@ TEST(StaticSetTest, FindHandlesInvalidValueTest) {
 }
 
 TEST(StaticSetTest, ThrowsOnDuplicateValueTest) {
-  ASSERT_THROW(([] { auto _dup = to_static_set<int32_t>({1, 2, 1}); }()),
+  ASSERT_THROW(([] -> void { auto _ = to_static_set<int32_t>({1, 2, 1}); }()),
                std::logic_error);
 }
