@@ -4,48 +4,11 @@
 
 #include "lexer.h"
 
-auto parse_simple_expression(const std::string& body)
-    -> std::unique_ptr<ASTNode> {
-  std::string program = "func main() " + body + " return 0 end";
-
-  auto tokens =
-      Lexer(FileContents{.name = "test.b", .data = program}).tokenise();
-  auto parser = Parser(tokens);
-
-  auto node = parser.parse_top_level();
-
-  auto prog = dynamic_cast<Program*>(node.get());
-  if (!prog) throw std::runtime_error("program not found");
-
-  auto fn = dynamic_cast<FunctionDeclaration*>(prog->functions.at(0).get());
-  if (!fn) throw std::runtime_error("fn not found");
-
-  return std::move(fn->statements.at(0));
-}
-
-auto parse_statements(const std::string& body)
-    -> std::vector<std::unique_ptr<ASTNode>> {
-  std::string program = "func main() " + body + " return 0 end";
-
-  auto tokens =
-      Lexer(FileContents{.name = "test.b", .data = program}).tokenise();
-  auto parser = Parser(tokens);
-
-  auto node = parser.parse_top_level();
-
-  auto prog = dynamic_cast<Program*>(node.get());
-  if (!prog) throw std::runtime_error("program not found");
-
-  auto fn = dynamic_cast<FunctionDeclaration*>(prog->functions.at(0).get());
-  if (!fn) throw std::runtime_error("fn not found");
-
-  fn->statements.pop_back();  // remove return statement
-
-  return std::move(fn->statements);
-}
+using Nodes = std::vector<std::unique_ptr<ASTNode>>;
+using Node = std::unique_ptr<ASTNode>;
 
 template <class T>
-auto cast_node(std::unique_ptr<ASTNode>& node) -> T* {
+auto cast_node(Node& node) -> T* {
   auto ptr = dynamic_cast<T*>(node.get());
   if (!ptr)
     throw std::runtime_error(
@@ -53,8 +16,42 @@ auto cast_node(std::unique_ptr<ASTNode>& node) -> T* {
   return ptr;
 }
 
+auto parse_statements(const std::string& body, Nodes& nodes) -> void {
+  std::string program = "func main() " + body + " return 0 end";
+
+  auto tokens =
+      Lexer(FileContents{.name = "test.b", .data = program}).tokenise();
+  auto parser = Parser(tokens);
+
+  auto node = parser.parse_top_level();
+
+  auto prog = dynamic_cast<Program*>(node.get());
+  ASSERT_NE(prog, nullptr) << "Program not generated in parse_statements";
+
+  auto fn = dynamic_cast<FunctionDeclaration*>(prog->functions.at(0).get());
+  ASSERT_NE(fn, nullptr) << "Function not generated in parse_statements";
+
+  auto ret = dynamic_cast<ReturnStatement*>(fn->statements.back().get());
+  ASSERT_NE(ret, nullptr)
+      << "Return statemnt not generated in parse_statements";
+
+  fn->statements.pop_back();  // remove return statement
+
+  nodes = std::move(fn->statements);
+}
+
+auto parse_simple_expression(const std::string& body, Node& node) -> void {
+  Nodes nodes;
+  ASSERT_NO_FATAL_FAILURE(parse_statements(body, nodes));
+
+  ASSERT_GT(nodes.size(), 0) << "Failed to generate statements";
+  ASSERT_EQ(nodes.size(), 1) << "Prefer parse_statements for > 1 statements";
+  node = std::move(nodes.at(0));
+}
+
 TEST(ParserTest, ParsesIntLiteralVarAssignment) {
-  auto root = parse_simple_expression("x = 1234");
+  Node root;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 1234", root));
   auto decl = cast_node<VariableDeclarationStatement>(root);
 
   auto value = cast_node<IntLiteralExpression>(decl->value);
@@ -64,7 +61,8 @@ TEST(ParserTest, ParsesIntLiteralVarAssignment) {
 }
 
 TEST(ParserTest, ParsesFloatLiteralVarAssignment) {
-  auto root = parse_simple_expression("x = 35.131");
+  Node root;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 35.131", root));
   auto decl = cast_node<VariableDeclarationStatement>(root);
 
   auto value = cast_node<FloatLiteralExpression>(decl->value);
@@ -74,7 +72,9 @@ TEST(ParserTest, ParsesFloatLiteralVarAssignment) {
 }
 
 TEST(ParserTest, ParsesIntAdditionVarAssignment) {
-  auto root = parse_simple_expression("x = 123 + 321");
+  Node root;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 123 + 321", root));
+
   auto decl = cast_node<VariableDeclarationStatement>(root);
 
   auto value = cast_node<BinaryExpression>(decl->value);
@@ -89,7 +89,8 @@ TEST(ParserTest, ParsesIntAdditionVarAssignment) {
 }
 
 TEST(ParserTest, ParsesFloatAdditionVarAssignment) {
-  auto root = parse_simple_expression("x = 1.23 + 2.34");
+  Node root;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 1.23 + 2.34", root));
   auto decl = cast_node<VariableDeclarationStatement>(root);
 
   auto value = cast_node<BinaryExpression>(decl->value);
@@ -103,7 +104,8 @@ TEST(ParserTest, ParsesFloatAdditionVarAssignment) {
 }
 
 TEST(ParserTest, ParsesShowStatement) {
-  auto root = parse_simple_expression("show 123");
+  Node root;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("show 123", root));
   auto show = cast_node<ShowStatement>(root);
 
   auto value = cast_node<IntLiteralExpression>(show->expr);
@@ -112,9 +114,11 @@ TEST(ParserTest, ParsesShowStatement) {
 }
 
 TEST(ParserTest, ParsesSetStatement) {
-  auto root = parse_statements("x = 10\nset x = 12");
-  auto show = cast_node<VariableAssignmentStatement>(root.at(1));
+  Nodes stmts;
+  ASSERT_NO_FATAL_FAILURE(parse_statements("x = 10\nset x = 12", stmts));
+  ASSERT_EQ(stmts.size(), 2);
 
+  auto show = cast_node<VariableAssignmentStatement>(stmts.at(1));
   auto value = cast_node<IntLiteralExpression>(show->value);
 
   ASSERT_EQ(show->name, "x");
@@ -122,11 +126,13 @@ TEST(ParserTest, ParsesSetStatement) {
 }
 
 TEST(ParserTest, ParsesMultiplication) {
-  auto expr = parse_simple_expression("x = 10 * 20");
+  Node expr;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 10 * 20", expr));
   auto assign = cast_node<VariableDeclarationStatement>(expr);
 
   auto mult = cast_node<BinaryExpression>(assign->value);
   ASSERT_EQ(mult->op, TokenType::Asterisk);
+
   auto left = cast_node<IntLiteralExpression>(mult->lhs);
   auto right = cast_node<IntLiteralExpression>(mult->rhs);
 
@@ -136,7 +142,9 @@ TEST(ParserTest, ParsesMultiplication) {
 }
 
 TEST(ParserTest, ParsesDivision) {
-  auto expr = parse_simple_expression("x = 10 / 20");
+  Node expr;
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 10 / 20", expr));
+
   auto assign = cast_node<VariableDeclarationStatement>(expr);
 
   auto div = cast_node<BinaryExpression>(assign->value);
@@ -150,7 +158,8 @@ TEST(ParserTest, ParsesDivision) {
 }
 
 TEST(ParserTest, ParsesVariableIncrement) {
-  auto stmts = parse_statements("x = 12\nset x = x * 2");
+  Nodes stmts;
+  ASSERT_NO_FATAL_FAILURE(parse_statements("x = 12\nset x = x * 2", stmts));
   ASSERT_EQ(stmts.size(), 2);
 
   auto declare = cast_node<VariableDeclarationStatement>(stmts.at(0));
