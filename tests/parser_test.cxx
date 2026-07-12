@@ -7,6 +7,11 @@
 using Nodes = std::vector<std::unique_ptr<ASTNode>>;
 using Node = std::unique_ptr<ASTNode>;
 
+// I would never use this in prod code, but it's great here.
+#define PARSE_EXPR(NAME, EXPR) \
+  Node NAME;                   \
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression(EXPR, NAME));
+
 template <class T>
 auto cast_node(Node& node) -> T* {
   auto ptr = dynamic_cast<T*>(node.get());
@@ -28,6 +33,7 @@ auto parse_statements(const std::string& body, Nodes& nodes) -> void {
   auto prog = dynamic_cast<Program*>(node.get());
   ASSERT_NE(prog, nullptr) << "Program not generated in parse_statements";
 
+  ASSERT_EQ(prog->functions.size(), 1) << "Function not generated correctly";
   auto fn = dynamic_cast<FunctionDeclaration*>(prog->functions.at(0).get());
   ASSERT_NE(fn, nullptr) << "Function not generated in parse_statements";
 
@@ -68,7 +74,7 @@ TEST(ParserTest, ParsesFloatLiteralVarAssignment) {
 
   auto value = cast_node<FloatLiteralExpression>(decl->value);
 
-  ASSERT_EQ(value->value, 35.131);
+  ASSERT_FLOAT_EQ(value->value, 35.131);
   EXPECT_EQ(decl->name, "x");
 }
 
@@ -100,8 +106,8 @@ TEST(ParserTest, ParsesFloatAdditionVarAssignment) {
   auto left = cast_node<FloatLiteralExpression>(value->lhs);
   auto right = cast_node<FloatLiteralExpression>(value->rhs);
 
-  ASSERT_EQ(left->value, 1.23);
-  EXPECT_EQ(right->value, 2.34);
+  ASSERT_FLOAT_EQ(left->value, 1.23);
+  EXPECT_FLOAT_EQ(right->value, 2.34);
 }
 
 TEST(ParserTest, ParsesShowStatement) {
@@ -178,4 +184,39 @@ TEST(ParserTest, ParsesVariableIncrement) {
 
   ASSERT_EQ(left->name, "x");
   ASSERT_EQ(right->value, 2);
+}
+
+TEST(ParserTest, ParsesTypedVariableDeclaration) {
+  PARSE_EXPR(node, "x: Int32 = 1234");
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x: Int32 = 1234", node));
+
+  auto decl = cast_node<VariableDeclarationStatement>(node);
+
+  ASSERT_EQ(decl->name, "x");
+  ASSERT_NE(decl->type_identifier, nullptr);
+
+  auto type = cast_node<TypeExpression>(decl->type_identifier);
+  ASSERT_EQ(type->name, "Int32");
+}
+
+TEST(ParserTest, ParsesParenExpression) {
+  PARSE_EXPR(root, "x = 5 * (2 + 3)");
+
+  auto decl = cast_node<VariableDeclarationStatement>(root);
+  ASSERT_EQ(decl->name, "x");
+
+  auto mult = cast_node<BinaryExpression>(decl->value);
+  ASSERT_EQ(mult->op, TokenType::Asterisk);
+
+  auto left_mult = cast_node<IntLiteralExpression>(mult->lhs);
+  ASSERT_EQ(left_mult->value, 5);
+
+  auto add = cast_node<BinaryExpression>(mult->rhs);
+  ASSERT_EQ(add->op, TokenType::Plus);
+
+  auto left_add = cast_node<IntLiteralExpression>(add->lhs);
+  EXPECT_EQ(left_add->value, 2);
+
+  auto right_add = cast_node<IntLiteralExpression>(add->rhs);
+  EXPECT_EQ(right_add->value, 3);
 }
