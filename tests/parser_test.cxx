@@ -79,6 +79,8 @@ TEST(ParserTest, ParsesIntAdditionVarAssignment) {
 
   auto value = cast_node<BinaryExpression>(decl->value);
 
+  ASSERT_EQ(value->op, TokenType::Plus);
+
   auto left = cast_node<IntLiteralExpression>(value->lhs);
   auto right = cast_node<IntLiteralExpression>(value->rhs);
 
@@ -91,6 +93,7 @@ TEST(ParserTest, ParsesFloatAdditionVarAssignment) {
   auto decl = cast_node<VariableDeclarationStatement>(root);
 
   auto value = cast_node<BinaryExpression>(decl->value);
+  ASSERT_EQ(value->op, TokenType::Plus);
 
   auto left = cast_node<FloatLiteralExpression>(value->lhs);
   auto right = cast_node<FloatLiteralExpression>(value->rhs);
