@@ -32,7 +32,8 @@ inline auto operator<<(std::ostream& os, const Token& token) -> std::ostream& {
 
 using Tokens = std::vector<Token>;
 
-inline auto operator<<(std::ostream& os, const Tokens& tokens) -> std::ostream& {
+inline auto operator<<(std::ostream& os, const Tokens& tokens)
+    -> std::ostream& {
   os << "[";
   for (size_t i = 0; i < tokens.size(); i++) {
     os << tokens.at(i);

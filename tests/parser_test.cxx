@@ -39,13 +39,17 @@ auto parse_statements(const std::string& body)
   auto fn = dynamic_cast<FunctionDeclaration*>(prog->functions.at(0).get());
   if (!fn) throw std::runtime_error("fn not found");
 
+  fn->statements.pop_back();  // remove return statement
+
   return std::move(fn->statements);
 }
 
 template <class T>
 auto cast_node(std::unique_ptr<ASTNode>& node) -> T* {
   auto ptr = dynamic_cast<T*>(node.get());
-  if (!ptr) throw std::runtime_error("Failed to cast node to expected type");
+  if (!ptr)
+    throw std::runtime_error(
+        std::format("Failed to cast node to type: {}", typeid(T).name()));
   return ptr;
 }
 
@@ -140,4 +144,25 @@ TEST(ParserTest, ParsesDivision) {
   ASSERT_EQ(assign->name, "x");
   EXPECT_EQ(left->value, 10);
   EXPECT_EQ(right->value, 20);
+}
+
+TEST(ParserTest, ParsesVariableIncrement) {
+  auto stmts = parse_statements("x = 12\nset x = x * 2");
+  ASSERT_EQ(stmts.size(), 2);
+
+  auto declare = cast_node<VariableDeclarationStatement>(stmts.at(0));
+
+  ASSERT_EQ(declare->name, "x");
+  auto value = cast_node<IntLiteralExpression>(declare->value)->value;
+
+  ASSERT_EQ(value, 12);
+
+  auto assign = cast_node<VariableAssignmentStatement>(stmts.at(1));
+  auto add = cast_node<BinaryExpression>(assign->value);
+
+  auto left = cast_node<VariableExpression>(add->lhs);
+  auto right = cast_node<IntLiteralExpression>(add->rhs);
+
+  ASSERT_EQ(left->name, "x");
+  ASSERT_EQ(right->value, 2);
 }
