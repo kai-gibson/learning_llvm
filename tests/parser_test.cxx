@@ -31,6 +31,7 @@ auto parse_statements(const std::string& body, Nodes& nodes) -> void {
   auto fn = dynamic_cast<FunctionDeclaration*>(prog->functions.at(0).get());
   ASSERT_NE(fn, nullptr) << "Function not generated in parse_statements";
 
+  ASSERT_FALSE(fn->statements.empty()) << "No statements generated";
   auto ret = dynamic_cast<ReturnStatement*>(fn->statements.back().get());
   ASSERT_NE(ret, nullptr)
       << "Return statemnt not generated in parse_statements";
