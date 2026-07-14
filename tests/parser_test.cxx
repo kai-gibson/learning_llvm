@@ -9,11 +9,6 @@
 using Nodes = std::vector<std::unique_ptr<ASTNode>>;
 using Node = std::unique_ptr<ASTNode>;
 
-// I would never use this in prod code, but it's great here.
-#define PARSE_EXPR(NAME, EXPR) \
-  Node NAME;                   \
-  ASSERT_NO_FATAL_FAILURE(parse_simple_expression(EXPR, NAME));
-
 template <class T>
 auto cast(Node& node, T&& output) -> void {
   auto ptr = dynamic_cast<T*>(node.get());
@@ -28,6 +23,18 @@ auto cast_node(Node& node) -> T* {
     throw std::runtime_error(
         std::format("Failed to cast node to type: {}", typeid(T).name()));
   return ptr;
+}
+
+auto parse_functions(const std::string& program, Nodes& nodes) -> void {
+  auto tokens =
+      Lexer(FileContents{.name = "test.b", .data = program}).tokenise();
+  auto parser = Parser(tokens);
+
+  auto root = parser.parse_top_level();
+
+  auto result = dynamic_cast<Program*>(root.get());
+  ASSERT_NE(result, nullptr);
+  nodes = std::move(result->functions);
 }
 
 auto parse_statements(const std::string& body, Nodes& nodes) -> void {
@@ -64,6 +71,19 @@ auto parse_simple_expression(const std::string& body, Node& node) -> void {
   ASSERT_EQ(nodes.size(), 1) << "Prefer parse_statements for > 1 statements";
   node = std::move(nodes.at(0));
 }
+
+// I would never use this in prod code, but it's great here.
+#define PARSE_EXPR(NAME, EXPR) \
+  Node NAME;                   \
+  ASSERT_NO_FATAL_FAILURE(parse_simple_expression(EXPR, NAME));
+
+#define PARSE_STMTS(NAME, EXPR) \
+  Nodes NAME;                   \
+  ASSERT_NO_FATAL_FAILURE(parse_statements(EXPR, NAME));
+
+#define PARSE_FNS(NAME, EXPR) \
+  Program* NAME = nullptr;    \
+  ASSERT_NO_FATAL_FAILURE(parse_functions(EXPR, NAME));
 
 TEST(ParserTest, ParsesIntLiteralVarAssignment) {
   Node root;
@@ -251,14 +271,70 @@ TEST(ParserTest, ParsesMultAddOrder) {
   ASSERT_EQ(mult_right->value, 4);
 }
 
-// negative cases
+TEST(ParserTest, ParsesSimpleFunction) {
+  constexpr auto program = R"(
+    func one()
+      return 1
+    end
 
+    func main() 
+      return ret_one()
+    end
+  )";
+
+  Nodes nodes;
+  parse_functions(program, nodes);
+  ASSERT_EQ(nodes.size(), 2);
+
+  auto one = cast_node<FunctionDeclaration>(nodes.at(0));
+  ASSERT_EQ(one->name, "one");
+  ASSERT_EQ(one->statements.size(), 1);
+
+  auto ret_literal = cast_node<ReturnStatement>(one->statements.at(0));
+  auto int_val = cast_node<IntLiteralExpression>(ret_literal->value);
+  ASSERT_EQ(int_val->value, 1);
+
+  auto main = cast_node<FunctionDeclaration>(nodes.at(1));
+  ASSERT_EQ(main->name, "main");
+  ASSERT_EQ(main->statements.size(), 1);
+
+  auto ret_call = cast_node<ReturnStatement>(main->statements.at(0));
+  auto func_call = cast_node<FunctionCallExpression>(ret_call->value);
+  ASSERT_EQ(func_call->name, "ret_one");
+}
+
+using ::testing::AnyOf;
+using ::testing::HasSubstr;
+
+// negative cases
 TEST(ParserTest, ThrowsOnUnclosedParenthesis) {
-  using ::testing::AnyOf;
-  using ::testing::HasSubstr;
   try {
     PARSE_EXPR(root, "x = 10 * (2 + 3");
   } catch (ParseError& err) {
     EXPECT_THAT(err.what(), HasSubstr("Expected ')'"));
+  }
+}
+
+TEST(ParserTest, ThrowsOnUnknownType) {
+  try {
+    PARSE_EXPR(root, "x: FakeType = 123");
+  } catch (ParseError& err) {
+    EXPECT_THAT(err.what(), HasSubstr("Unknown type: FakeType"));
+  }
+}
+
+TEST(ParserTest, ThrowsOnUnknownExpression) {
+  try {
+    PARSE_EXPR(root, "x = fafewafefdddf");
+  } catch (ParseError& err) {
+    EXPECT_THAT(err.what(), HasSubstr("Unexpected primary expression"));
+  }
+}
+
+TEST(ParserTest, ThrowsOnUnknownStatement) {
+  try {
+    PARSE_EXPR(root, "*");
+  } catch (ParseError& err) {
+    EXPECT_THAT(err.what(), HasSubstr("Unexpected statement"));
   }
 }
