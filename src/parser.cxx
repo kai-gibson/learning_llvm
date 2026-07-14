@@ -4,14 +4,17 @@
 
 #include "compile_error.h"
 
+// higher number == binds tighter
 auto precedence(TokenType t) -> int32_t {
   switch (t) {
+    case TokenType::Equals:
+      return 1;
     case TokenType::Plus:
     case TokenType::Minus:
-      return 1;
+      return 2;
     case TokenType::Asterisk:
     case TokenType::ForwardSlash:
-      return 2;
+      return 3;
     default:
       return 0;
   }

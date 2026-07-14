@@ -7,6 +7,7 @@
 
 #include "ast.h"
 #include "lexer.h"
+#include "utils/container.h"
 
 constexpr auto is_builtin_type(std::string_view target) -> bool {
   constexpr std::array builtin_types = {

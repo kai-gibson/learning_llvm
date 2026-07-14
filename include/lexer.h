@@ -15,6 +15,18 @@
 auto is_identifier_char(char chr) -> bool;
 auto is_symbol_char(char chr) -> bool;
 
+constexpr auto is_bool_operator(TokenType t) -> bool {
+  constexpr auto bool_operators = to_static_set<TokenType>({
+      TokenType::Equals,
+      TokenType::GreaterThan,
+      TokenType::GreaterThanEquals,
+      TokenType::LessThan,
+      TokenType::LessThanEquals,
+  });
+
+  return bool_operators.contains(t);
+}
+
 struct Token {
   TokenType type;
   std::string value;
@@ -36,8 +48,8 @@ inline auto operator<<(std::ostream& os, const Tokens& tokens)
     -> std::ostream& {
   os << "[";
   for (size_t i = 0; i < tokens.size(); i++) {
-    os << tokens.at(i);
-    if (i != tokens.size() - 1) os << ",";
+    os << '\t' << tokens.at(i);
+    if (i != tokens.size() - 1) os << ",\n";
   }
   return os << "]";
 }

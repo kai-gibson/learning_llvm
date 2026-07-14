@@ -7,7 +7,8 @@
 #include "print_visitor.h"
 #include "type_check_visitor.h"
 
-void compile(const std::string& filename, bool output_llvm) {
+void compile(const std::string& filename, bool output_llvm,
+             bool output_tokens) {
   auto file_data = read_entire_file(filename);
   if (!file_data.has_value()) {
     std::cerr << "Error reading file: " << file_data.error().what() << '\n';
@@ -15,6 +16,7 @@ void compile(const std::string& filename, bool output_llvm) {
 
   Lexer lexer(FileContents{.name = filename, .data = *file_data});
   auto tokens = lexer.tokenise();
+  if (output_tokens) std::cout << tokens;
 
   Parser parser(tokens);
 

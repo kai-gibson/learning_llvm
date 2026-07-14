@@ -18,7 +18,8 @@ class TypeOperations {
   virtual auto gte(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* = 0;
   virtual auto lte(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* = 0;
 
-  auto apply(TokenType token_type, llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value*;
+  auto apply(TokenType token_type, llvm::Value* lhs, llvm::Value* rhs)
+      -> llvm::Value*;
 };
 
 class IntOperations : public TypeOperations {
@@ -55,7 +56,7 @@ class FloatOperations : public TypeOperations {
   llvm::IRBuilder<>& builder;
 };
 
-auto build_type_operations(
-    Type type, llvm::IRBuilder<>& builder) -> std::unique_ptr<TypeOperations>;
+auto build_type_operations(Type type, llvm::IRBuilder<>& builder)
+    -> std::unique_ptr<TypeOperations>;
 
 #endif  // OPERATOR_MAP_H

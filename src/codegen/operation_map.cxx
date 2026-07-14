@@ -2,8 +2,8 @@
 
 #include <format>
 
-auto build_type_operations(
-    Type type, llvm::IRBuilder<>& builder) -> std::unique_ptr<TypeOperations> {
+auto build_type_operations(Type type, llvm::IRBuilder<>& builder)
+    -> std::unique_ptr<TypeOperations> {
   switch (type.type_id) {
     case TypeId::Int8:
     case TypeId::Int16:
@@ -35,7 +35,7 @@ auto build_type_operations(
 }
 
 auto TypeOperations::apply(TokenType token_type, llvm::Value* lhs,
-                                   llvm::Value* rhs) -> llvm::Value* {
+                           llvm::Value* rhs) -> llvm::Value* {
   switch (token_type) {
     case TokenType::Plus:
       return add(lhs, rhs);
@@ -63,11 +63,13 @@ auto IntOperations::add(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateAdd(lhs, rhs, "addtmp");
 }
 
-auto IntOperations::subtract(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
+auto IntOperations::subtract(llvm::Value* lhs, llvm::Value* rhs)
+    -> llvm::Value* {
   return builder.CreateSub(lhs, rhs, "subtmp");
 }
 
-auto IntOperations::multiply(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
+auto IntOperations::multiply(llvm::Value* lhs, llvm::Value* rhs)
+    -> llvm::Value* {
   return builder.CreateMul(lhs, rhs, "multmp");
 }
 
@@ -97,15 +99,18 @@ auto FloatOperations::add(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
   return builder.CreateFAdd(lhs, rhs, "faddtmp");
 }
 
-auto FloatOperations::subtract(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
+auto FloatOperations::subtract(llvm::Value* lhs, llvm::Value* rhs)
+    -> llvm::Value* {
   return builder.CreateFSub(lhs, rhs, "fsubtmp");
 }
 
-auto FloatOperations::multiply(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
+auto FloatOperations::multiply(llvm::Value* lhs, llvm::Value* rhs)
+    -> llvm::Value* {
   return builder.CreateFMul(lhs, rhs, "fmultmp");
 }
 
-auto FloatOperations::divide(llvm::Value* lhs, llvm::Value* rhs) -> llvm::Value* {
+auto FloatOperations::divide(llvm::Value* lhs, llvm::Value* rhs)
+    -> llvm::Value* {
   return builder.CreateFDiv(lhs, rhs, "fdivtmp");
 }
 

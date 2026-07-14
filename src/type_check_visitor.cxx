@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "compile_error.h"
+#include "lexer.h"
 
 auto is_int_type(TypeId type_id) -> bool {
   using std::ranges::contains;
@@ -73,15 +74,40 @@ void TypeCheckVisitor::visit(BinaryExpression& expr) {
     }
   }
 
-  std::cout << (int)lhs.type_id << " " << (int)rhs.type_id << "\n";
-  if (lhs.type_id != rhs.type_id) {
-    throw TypeError(
-        expr.source_location,
-        "Type Error: left ({}) and right ({}) of binary operation: {} do not "
-        "match",
-        lhs.identifier, rhs.identifier, token_type_to_str(expr.op));
+  // default to Float64 or Int32
+  if (lhs_literal && rhs_literal) {
+    if (lhs.type_id == TypeId::IntLiteral &&
+        rhs.type_id == TypeId::IntLiteral) {
+      expr.lhs->resolved_type =
+          Type{.type_id = TypeId::Int32, .identifier = "Int32"};
+      expr.rhs->resolved_type = expr.lhs->resolved_type;
+
+    } else if (lhs.type_id == TypeId::FloatLiteral ||
+               rhs.type_id == TypeId::FloatLiteral) {
+      expr.lhs->resolved_type =
+          Type{.type_id = TypeId::Float64, .identifier = "Float64"};
+      expr.rhs->resolved_type = expr.lhs->resolved_type;
+    } else {
+      throw TypeError(expr.source_location, "Unexpected non-numeric literal");
+    }
+  } else {
+    std::cout << (int)lhs.type_id << " " << (int)rhs.type_id << "\n";
+    if (lhs.type_id != rhs.type_id) {
+      throw TypeError(
+          expr.source_location,
+          "Type Error: left ({}) and right ({}) of binary operation: {} do not "
+          "match",
+          lhs.identifier, rhs.identifier, token_type_to_str(expr.op));
+    }
   }
 
+  if (is_bool_operator(expr.op)) {
+    result = Type{.type_id = TypeId::Bool, .identifier = "Bool"};
+    expr.resolved_type = result;
+    return;
+  }
+
+  // infer from the right value
   result = Type{.type_id = rhs.type_id, .identifier = rhs.identifier};
   expr.resolved_type = result;
 }
