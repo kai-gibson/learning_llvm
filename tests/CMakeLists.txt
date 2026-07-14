@@ -27,6 +27,7 @@ target_link_libraries(run_tests PRIVATE
   learning_llvm_lib
   project_settings
   gtest_main
+  gmock_main
 )
 
 include(GoogleTest)

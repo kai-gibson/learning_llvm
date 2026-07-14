@@ -1,7 +1,9 @@
 #include "parser.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "compile_error.h"
 #include "lexer.h"
 
 using Nodes = std::vector<std::unique_ptr<ASTNode>>;
@@ -11,6 +13,13 @@ using Node = std::unique_ptr<ASTNode>;
 #define PARSE_EXPR(NAME, EXPR) \
   Node NAME;                   \
   ASSERT_NO_FATAL_FAILURE(parse_simple_expression(EXPR, NAME));
+
+template <class T>
+auto cast(Node& node, T&& output) -> void {
+  auto ptr = dynamic_cast<T*>(node.get());
+  ASSERT_NE(ptr, nullptr);
+  output = ptr;
+}
 
 template <class T>
 auto cast_node(Node& node) -> T* {
@@ -219,4 +228,37 @@ TEST(ParserTest, ParsesParenExpression) {
 
   auto right_add = cast_node<IntLiteralExpression>(add->rhs);
   EXPECT_EQ(right_add->value, 3);
+}
+
+TEST(ParserTest, ParsesMultAddOrder) {
+  PARSE_EXPR(root, "x = 2 + 3 * 4");
+  auto decl = cast_node<VariableDeclarationStatement>(root);
+  ASSERT_EQ(decl->name, "x");
+
+  auto add = cast_node<BinaryExpression>(decl->value);
+  ASSERT_EQ(add->op, TokenType::Plus);
+
+  auto left_add = cast_node<IntLiteralExpression>(add->lhs);
+  ASSERT_EQ(left_add->value, 2);
+
+  auto mult = cast_node<BinaryExpression>(add->rhs);
+  ASSERT_EQ(mult->op, TokenType::Asterisk);
+
+  auto mult_left = cast_node<IntLiteralExpression>(mult->lhs);
+  ASSERT_EQ(mult_left->value, 3);
+
+  auto mult_right = cast_node<IntLiteralExpression>(mult->rhs);
+  ASSERT_EQ(mult_right->value, 4);
+}
+
+// negative cases
+
+TEST(ParserTest, ThrowsOnUnclosedParenthesis) {
+  using ::testing::AnyOf;
+  using ::testing::HasSubstr;
+  try {
+    PARSE_EXPR(root, "x = 10 * (2 + 3");
+  } catch (ParseError& err) {
+    EXPECT_THAT(err.what(), HasSubstr("Expected ')'"));
+  }
 }

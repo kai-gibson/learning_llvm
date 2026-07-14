@@ -4,7 +4,6 @@ if(POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-# silence alignment errors on coverage linking
 set(CMAKE_OSX_DEPLOYMENT_TARGET "14.7" CACHE STRING "Minimum OS X version" FORCE)
 
 project(LearningLLVM VERSION 1.0.0 LANGUAGES CXX C)
@@ -26,11 +25,6 @@ llvm_map_components_to_libnames(llvm_libs
 )
 list(REMOVE_DUPLICATES llvm_libs)
 
-# ---------------------------------------------------------------------------
-# Shared project settings, applied to every internal target.
-# Using an INTERFACE library instead of a plain variable means includes,
-# defines, and options propagate consistently and only need to be listed once.
-# ---------------------------------------------------------------------------
 add_library(project_settings INTERFACE)
 
 target_include_directories(project_settings INTERFACE
@@ -61,9 +55,6 @@ if(ENABLE_COVERAGE)
     )
 endif()
 
-# ---------------------------------------------------------------------------
-# Library (separated out for testability)
-# ---------------------------------------------------------------------------
 add_library(learning_llvm_lib OBJECT
     src/frontend.cxx
     src/lexer.cxx
@@ -80,9 +71,6 @@ target_link_libraries(learning_llvm_lib
     PRIVATE project_settings
 )
 
-# ---------------------------------------------------------------------------
-# Final executable
-# ---------------------------------------------------------------------------
 add_executable(learning_llvm src/main.cxx)
 
 target_link_libraries(learning_llvm PRIVATE
