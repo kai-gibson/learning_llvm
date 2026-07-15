@@ -1,138 +1,146 @@
 #ifndef PRINT_VISITOR_H
 #define PRINT_VISITOR_H
-#include <iostream>
+#include <format>
 #include <string>
 
 #include "ast.h"
 #include "visitor.h"
 
-struct PrintVisitor : public Visitor {
-  std::size_t indent = 0;
+/*
+  stack based pretty printer for the AST in s-expression format
 
-  // NOLINTNEXTLINE(modernize-return-braced-init-list)
-  auto pad() -> std::string { return std::string(indent * 2, ' '); }
+  Format is
+  (Node value
+    (Child value))
+ */
+struct PrettyPrinter {
+  struct Closer {
+    PrettyPrinter& printer;
+
+    ~Closer() { printer.close_node(); }
+  };
+
+  auto add_node(std::string_view name) -> Closer {
+    if (depth) {
+      output += std::format("\n{}", std::string(depth * 4, ' '));
+    }
+
+    output += std::format("({}", name);
+    depth += 1;
+
+    return Closer{*this};
+  }
+
+  void add_value(std::string_view value) {
+    output += std::format(" {}", value);
+  }
+
+  void add_string_value(std::string_view value) {
+    output += std::format(" \"{}\"", value);
+  }
+
+  void close_node() {
+    depth -= 1;
+    output += ")";
+  }
+
+  auto to_string() -> std::string { return std::move(output); }
+
+  uint64_t depth{};
+  std::string output;
+};
+
+struct PrintVisitor : public Visitor {
+  PrettyPrinter printer;
 
   void print_resolved_type(ASTNode& node) {
     if (node.resolved_type.has_value()) {
-      std::cout << ", ResolvedType(" << node.resolved_type->identifier << ")";
+      auto print_node = printer.add_node("ResolvedType");
+      printer.add_value(node.resolved_type->identifier);
     }
   }
 
   void visit(FloatLiteralExpression& expr) override {
-    std::cout << "FloatLiteral(" << expr.value;
+    auto print_node = printer.add_node("FloatLiteral");
+    printer.add_value(std::to_string(expr.value));
     print_resolved_type(expr);
-    std::cout << ")";
   }
 
   void visit(IntLiteralExpression& expr) override {
-    std::cout << "IntLiteralExpression(" << expr.value;
+    auto print_node = printer.add_node("IntLiteralExpression");
+    printer.add_value(std::to_string(expr.value));
     print_resolved_type(expr);
-    std::cout << ")";
   }
 
   void visit(BinaryExpression& expr) override {
-    std::cout << "BinaryExpression(" << token_type_to_str(expr.op);
+    auto print_node = printer.add_node("BinaryExpression");
+    printer.add_value(token_type_to_str(expr.op));
     print_resolved_type(expr);
-    std::cout << "\n";
-    indent++;
-    std::cout << pad() << "Lhs(";
+
     expr.lhs->accept(*this);
-    std::cout << ")\n";
-    std::cout << pad() << "Rhs(";
     expr.rhs->accept(*this);
-    std::cout << ")\n";
-    indent--;
-    std::cout << pad() << ")";
   }
 
   void visit(VariableExpression& expr) override {
-    std::cout << "VariableExpression(" << expr.name;
+    auto print_node = printer.add_node("VariableExpression");
+    printer.add_string_value(expr.name);
     print_resolved_type(expr);
-    std::cout << ")";
   }
 
   void visit(VariableDeclarationStatement& stmt) override {
-    std::cout << "VariableDeclarationStatement(\"" << stmt.name << "\"";
+    auto print_node = printer.add_node("VariableDeclarationStatement");
+    printer.add_string_value(stmt.name);
     print_resolved_type(stmt);
-    std::cout << "\n";
-    indent++;
-    std::cout << pad() << "Value(";
     stmt.value->accept(*this);
-    std::cout << ")";
 
     if (stmt.type_identifier) {
-      std::cout << "\n" << pad() << "Type(";
       stmt.type_identifier->accept(*this);
-      std::cout << ")";
     }
-
-    indent--;
-    std::cout << ")";
   }
 
   void visit(VariableAssignmentStatement& stmt) override {
-    std::cout << "VarAssign(\"" << stmt.name << "\"\n";
-    indent++;
-    std::cout << pad() << "Value(";
+    auto print_node = printer.add_node("VarAssign");
+    printer.add_string_value(stmt.name);
     stmt.value->accept(*this);
-    std::cout << ")";
-    indent--;
-    std::cout << ")";
   }
 
   void visit(ShowStatement& stmt) override {
-    std::cout << "Show(";
+    auto print_node = printer.add_node("Show");
     stmt.expr->accept(*this);
-    std::cout << ")";
   }
 
   void visit(FunctionDeclaration& func) override {
-    std::cout << "FunctionDeclaration(\n";
-    indent++;
-    std::cout << pad() << "Name(\"" << func.name << "\")";
+    auto print_node = printer.add_node("FunctionDeclaration");
+    printer.add_string_value(func.name);
+
     print_resolved_type(func);
-    std::cout << "\n";
+
     for (const auto& stmt : func.statements) {
-      std::cout << pad();
       stmt->accept(*this);
-      std::cout << "\n";
     }
-    indent--;
-    std::cout << pad() << ")";
   }
 
   void visit(FunctionCallExpression& call) override {
-    std::cout << "FunctionCall(\"" << call.name << "\"";
+    auto print_node = printer.add_node("FunctionCall");
+    printer.add_string_value(call.name);
     print_resolved_type(call);
-    std::cout << ")";
   }
 
   void visit(Program& program) override {
-    std::cout << "Program(\n";
-    indent++;
+    auto print_node = printer.add_node("Program");
     for (const auto& func : program.functions) {
-      std::cout << pad();
       func->accept(*this);
-      std::cout << "\n";
     }
-    indent--;
-    std::cout << ")\n";
   }
 
   void visit(ReturnStatement& ret) override {
-    std::cout << "ReturnStatement(\n";
-    indent++;
+    auto print_node = printer.add_node("ReturnStatement");
     ret.value->accept(*this);
-    indent--;
-    std::cout << ")\n";
   }
 
   void visit(TypeExpression& ret) override {
-    std::cout << "TypeExpression(\n";
-    indent++;
-    std::cout << "Name(\"" << ret.name << "\")";
-    indent--;
-    std::cout << ")\n";
+    auto print_node = printer.add_node("TypeExpression");
+    printer.add_value(ret.name);
   }
 };
 

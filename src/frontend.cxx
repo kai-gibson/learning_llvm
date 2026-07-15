@@ -1,5 +1,7 @@
 #include "frontend.h"
 
+#include <iostream>
+
 #include "codegen/code_generation_visitor.h"
 #include "file_io.h"
 #include "lexer.h"
@@ -27,6 +29,7 @@ void compile(const std::string& filename, bool output_llvm,
 
   PrintVisitor v;
   top->accept(v);
+  std::cout << v.printer.to_string();
 
   CodegenVisitor codegen;
   top->accept(codegen);
