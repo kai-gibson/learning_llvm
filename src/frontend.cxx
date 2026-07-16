@@ -29,7 +29,7 @@ void compile(const std::string& filename, bool output_llvm,
 
   PrintVisitor v;
   top->accept(v);
-  std::cout << v.printer.to_string();
+  std::cout << v.printer.to_string() << '\n';
 
   CodegenVisitor codegen;
   top->accept(codegen);
