@@ -26,8 +26,8 @@ class StaticMap {
     }
   }
 
-  [[nodiscard]] constexpr auto find(
-      const Key& key) const -> std::optional<std::reference_wrapper<const Value>> {
+  [[nodiscard]] constexpr auto find(const Key& key) const
+      -> std::optional<std::reference_wrapper<const Value>> {
     auto it =
         std::ranges::lower_bound(items_, key, {}, &Entry<Key, Value>::key);
     if (it != items_.end() && it->key == key) return std::cref(it->value);
@@ -54,8 +54,8 @@ class StaticSet {
     }
   }
 
-  constexpr auto find(
-      const Value& value) const -> std::optional<std::reference_wrapper<const Value>> {
+  constexpr auto find(const Value& value) const
+      -> std::optional<std::reference_wrapper<const Value>> {
     auto it = std::ranges::lower_bound(items_, value);
 
     if (it != items_.end() && *it == value) return std::cref(*it);

@@ -178,8 +178,7 @@ TEST(ParserTest, ParsesMultiplication) {
 }
 
 TEST(ParserTest, ParsesDivision) {
-  Node expr;
-  ASSERT_NO_FATAL_FAILURE(parse_simple_expression("x = 10 / 20", expr));
+  PARSE_EXPR(expr, "x = 10 / 20");
 
   auto assign = cast_node<VariableDeclarationStatement>(expr);
 
